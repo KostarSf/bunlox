@@ -28,9 +28,12 @@ async function runFile(file: string) {
 }
 
 async function runPrompt() {
+    console.log("Welcome to BunLox v0.1.0.");
+    console.log("Type \".exit\" or use Ctrl+C to quit.");
+
     process.stdout.write("> ");
     for await (const line of console) {
-        if (line === "exit") break;
+        if (line === ".exit") break;
         try {
             await run(line);
         } catch (error) {
