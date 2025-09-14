@@ -1,4 +1,4 @@
-import type { TokenType } from "./token-type";
+import type { TokenType } from "./token-types";
 
 export type Literal = string | number | boolean | null;
 

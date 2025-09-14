@@ -1,6 +1,7 @@
 import { LoxError, syntaxError, type SyntaxLoxError } from "./error";
 import { token, type Literal, type Token } from "./token";
-import { TOKEN_TYPE, type TokenType } from "./token-type";
+import { TOKEN_KEYWORDS } from "./token-keywords";
+import { TOKEN_TYPES, type TokenType } from "./token-types";
 
 class Scanner {
     #source: string;
@@ -23,7 +24,7 @@ class Scanner {
             this.#scanToken();
         }
 
-        this.#tokens.push(token({ type: TOKEN_TYPE.EOF, line: this.#line }));
+        this.#tokens.push(token({ type: TOKEN_TYPES.EOF, line: this.#line }));
 
         if (this.#errors.length > 0) {
             throw new LoxError("Syntax error", this.#errors);
@@ -41,56 +42,58 @@ class Scanner {
 
         switch (char) {
             case "(":
-                this.#addToken(TOKEN_TYPE.LEFT_PAREN);
+                this.#addToken(TOKEN_TYPES.LEFT_PAREN);
                 break;
             case ")":
-                this.#addToken(TOKEN_TYPE.RIGHT_PAREN);
+                this.#addToken(TOKEN_TYPES.RIGHT_PAREN);
                 break;
             case "{":
-                this.#addToken(TOKEN_TYPE.LEFT_BRACE);
+                this.#addToken(TOKEN_TYPES.LEFT_BRACE);
                 break;
             case "}":
-                this.#addToken(TOKEN_TYPE.RIGHT_BRACE);
+                this.#addToken(TOKEN_TYPES.RIGHT_BRACE);
                 break;
             case ",":
-                this.#addToken(TOKEN_TYPE.COMMA);
+                this.#addToken(TOKEN_TYPES.COMMA);
                 break;
             case ".":
-                this.#addToken(TOKEN_TYPE.DOT);
+                this.#addToken(TOKEN_TYPES.DOT);
                 break;
             case "-":
-                this.#addToken(TOKEN_TYPE.MINUS);
+                this.#addToken(TOKEN_TYPES.MINUS);
                 break;
             case "+":
-                this.#addToken(TOKEN_TYPE.PLUS);
+                this.#addToken(TOKEN_TYPES.PLUS);
                 break;
             case ";":
-                this.#addToken(TOKEN_TYPE.SEMICOLON);
+                this.#addToken(TOKEN_TYPES.SEMICOLON);
                 break;
             case "*":
-                this.#addToken(TOKEN_TYPE.STAR);
+                this.#addToken(TOKEN_TYPES.STAR);
                 break;
 
             case "!":
                 this.#addToken(
-                    this.#match("=") ? TOKEN_TYPE.BANG_EQUAL : TOKEN_TYPE.BANG
+                    this.#match("=") ? TOKEN_TYPES.BANG_EQUAL : TOKEN_TYPES.BANG
                 );
                 break;
             case "=":
                 this.#addToken(
-                    this.#match("=") ? TOKEN_TYPE.EQUAL_EQUAL : TOKEN_TYPE.EQUAL
+                    this.#match("=")
+                        ? TOKEN_TYPES.EQUAL_EQUAL
+                        : TOKEN_TYPES.EQUAL
                 );
                 break;
             case "<":
                 this.#addToken(
-                    this.#match("=") ? TOKEN_TYPE.LESS_EQUAL : TOKEN_TYPE.LESS
+                    this.#match("=") ? TOKEN_TYPES.LESS_EQUAL : TOKEN_TYPES.LESS
                 );
                 break;
             case ">":
                 this.#addToken(
                     this.#match("=")
-                        ? TOKEN_TYPE.GREATER_EQUAL
-                        : TOKEN_TYPE.GREATER
+                        ? TOKEN_TYPES.GREATER_EQUAL
+                        : TOKEN_TYPES.GREATER
                 );
                 break;
 
@@ -100,7 +103,7 @@ class Scanner {
                         this.#advance();
                     }
                 } else {
-                    this.#addToken(TOKEN_TYPE.SLASH);
+                    this.#addToken(TOKEN_TYPES.SLASH);
                 }
                 break;
 
@@ -120,14 +123,16 @@ class Scanner {
             default:
                 if (this.#isDigit(char)) {
                     this.#number();
-                } else {
-                    this.#errors.push(
-                        syntaxError(
-                            this.#line,
-                            `Unexpected character: '${char}'`
-                        )
-                    );
+                    break;
                 }
+
+                if (this.#isAlpha(char)) {
+                    this.#identifier();
+                    break;
+                }
+
+                const message = `Unexpected character: '${char}'`;
+                this.#errors.push(syntaxError(this.#line, message));
                 break;
         }
     }
@@ -169,7 +174,7 @@ class Scanner {
 
         // Trim the surrounding quotes.
         const value = this.#source.slice(this.#start + 1, this.#current - 1);
-        this.#addToken(TOKEN_TYPE.STRING, value);
+        this.#addToken(TOKEN_TYPES.STRING, value);
     }
 
     #isDigit(char: string) {
@@ -189,9 +194,31 @@ class Scanner {
         }
 
         this.#addToken(
-            TOKEN_TYPE.NUMBER,
+            TOKEN_TYPES.NUMBER,
             parseFloat(this.#source.slice(this.#start, this.#current))
         );
+    }
+
+    #identifier() {
+        while (this.#isAlphaNumeric(this.#peek())) {
+            this.#advance();
+        }
+
+        const text = this.#source.slice(this.#start, this.#current);
+        const type = TOKEN_KEYWORDS[text];
+        this.#addToken(type ?? TOKEN_TYPES.IDENTIFIER);
+    }
+
+    #isAlpha(char: string) {
+        return (
+            (char >= "a" && char <= "z") ||
+            (char >= "A" && char <= "Z") ||
+            char === "_"
+        );
+    }
+
+    #isAlphaNumeric(char: string) {
+        return this.#isAlpha(char) || this.#isDigit(char);
     }
 }
 

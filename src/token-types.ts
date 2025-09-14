@@ -1,4 +1,6 @@
-export const TOKEN_TYPE = {
+export type TokenType = (typeof TOKEN_TYPES)[keyof typeof TOKEN_TYPES];
+
+export const TOKEN_TYPES = {
     // Single-character tokens.
     LEFT_PAREN: "LEFT_PAREN",
     RIGHT_PAREN: "RIGHT_PAREN",
@@ -48,5 +50,3 @@ export const TOKEN_TYPE = {
     // End of file.
     EOF: "EOF",
 } as const;
-
-export type TokenType = (typeof TOKEN_TYPE)[keyof typeof TOKEN_TYPE];
