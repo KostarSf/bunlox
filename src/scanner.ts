@@ -12,10 +12,6 @@ class Scanner {
 
     #errors: SyntaxLoxError[] = [];
 
-    get errors() {
-        return [...this.#errors];
-    }
-
     constructor(source: string) {
         this.#source = source;
     }
@@ -28,6 +24,11 @@ class Scanner {
         }
 
         this.#tokens.push(token({ type: TOKEN_TYPE.EOF, line: this.#line }));
+
+        if (this.#errors.length > 0) {
+            throw new LoxError("Syntax error", this.#errors);
+        }
+
         return this.#tokens;
     }
 
@@ -144,11 +145,5 @@ class Scanner {
 
 export function scan(source: string) {
     const scanner = new Scanner(source);
-    const tokens = scanner.scanTokens();
-
-    if (scanner.errors.length > 0) {
-        throw new LoxError("Syntax error", scanner.errors);
-    }
-
-    return tokens;
+    return scanner.scanTokens();
 }
