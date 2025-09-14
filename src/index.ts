@@ -1,4 +1,5 @@
 import { LoxError } from "./error";
+import { scan } from "./scanner";
 
 if (Bun.argv.length > 3) {
     console.log("Usage: bunlox <input>");
@@ -15,7 +16,15 @@ if (Bun.argv.length < 3) {
 
 async function runFile(file: string) {
     const content = await Bun.file(file).text();
-    await run(content);
+    try {
+        await run(content);
+    } catch (error) {
+        if (error instanceof LoxError) {
+            console.error(error.message);
+        } else {
+            console.error(error);
+        }
+    }
 }
 
 async function runPrompt() {
@@ -36,7 +45,7 @@ async function runPrompt() {
 }
 
 async function run(source: string) {
-    const tokens = source.split(" ");
+    const tokens = scan(source);
     tokens.forEach((token) => {
         console.log(token);
     });
