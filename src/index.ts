@@ -1,5 +1,5 @@
 import { LoxError } from "./error";
-import { scan } from "./scanner";
+import { scanTokens } from "./scanner";
 
 if (Bun.argv.length > 3) {
     console.log("Usage: bunlox <input>");
@@ -48,8 +48,8 @@ async function runPrompt() {
 }
 
 async function run(source: string) {
-    const tokens = scan(source);
-    tokens.forEach((token) => {
+    const tokens = scanTokens(source);
+    for (const token of tokens) {
         console.log(token);
-    });
+    }
 }

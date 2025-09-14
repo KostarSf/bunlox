@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { scan } from "./scanner";
+import { scanTokens } from "./scanner";
 
 describe("Scanner", () => {
     test("should scan basic tokens and operators correctly", () => {
@@ -8,7 +8,7 @@ describe("Scanner", () => {
 !*+-/=<> <= == // operators
 `;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         expect(tokens).toHaveLength(17);
 
@@ -36,7 +36,7 @@ describe("Scanner", () => {
         const input = `// this is a comment
 print "hello"; // another comment`;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         // Should only have PRINT, STRING, SEMICOLON, and EOF tokens
         expect(tokens).toHaveLength(4);
@@ -50,7 +50,7 @@ print "hello"; // another comment`;
     test("should handle strings correctly", () => {
         const input = `"hello world" "test"`;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         expect(tokens).toHaveLength(3);
         expect(tokens[0]?.type).toBe("STRING");
@@ -63,7 +63,7 @@ print "hello"; // another comment`;
     test("should handle numbers correctly", () => {
         const input = `123 45.67 0.5`;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         expect(tokens).toHaveLength(4);
         expect(tokens[0]?.type).toBe("NUMBER");
@@ -78,7 +78,7 @@ print "hello"; // another comment`;
     test("should handle identifiers and keywords correctly", () => {
         const input = `var hello = true;`;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         expect(tokens).toHaveLength(6);
         expect(tokens[0]?.type).toBe("VAR");
@@ -93,7 +93,7 @@ print "hello"; // another comment`;
     test("should handle whitespace correctly", () => {
         const input = `   \t\n\r   `;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         // Should only have EOF token
         expect(tokens).toHaveLength(1);
@@ -103,7 +103,7 @@ print "hello"; // another comment`;
     test("should handle empty input", () => {
         const input = ``;
 
-        const tokens = scan(input);
+        const tokens = Array.from(scanTokens(input));
 
         expect(tokens).toHaveLength(1);
         expect(tokens[0]?.type).toBe("EOF");
