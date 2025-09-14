@@ -118,9 +118,16 @@ class Scanner {
                 break;
 
             default:
-                this.#errors.push(
-                    syntaxError(this.#line, `Unexpected character: '${char}'`)
-                );
+                if (this.#isDigit(char)) {
+                    this.#number();
+                } else {
+                    this.#errors.push(
+                        syntaxError(
+                            this.#line,
+                            `Unexpected character: '${char}'`
+                        )
+                    );
+                }
                 break;
         }
     }
@@ -142,8 +149,8 @@ class Scanner {
         return true;
     }
 
-    #peek() {
-        return this.#source[this.#current] ?? "\0";
+    #peek(offset = 0) {
+        return this.#source[this.#current + offset] ?? "\0";
     }
 
     #string() {
@@ -153,9 +160,7 @@ class Scanner {
         }
 
         if (this.#isAtEnd()) {
-            this.#errors.push(
-                syntaxError(this.#line, "Unterminated string.")
-            );
+            this.#errors.push(syntaxError(this.#line, "Unterminated string."));
             return;
         }
 
@@ -165,6 +170,28 @@ class Scanner {
         // Trim the surrounding quotes.
         const value = this.#source.slice(this.#start + 1, this.#current - 1);
         this.#addToken(TOKEN_TYPE.STRING, value);
+    }
+
+    #isDigit(char: string) {
+        return char >= "0" && char <= "9";
+    }
+
+    #number() {
+        while (this.#isDigit(this.#peek())) {
+            this.#advance();
+        }
+
+        if (this.#peek() === "." && this.#isDigit(this.#peek(1))) {
+            this.#advance();
+            while (this.#isDigit(this.#peek())) {
+                this.#advance();
+            }
+        }
+
+        this.#addToken(
+            TOKEN_TYPE.NUMBER,
+            parseFloat(this.#source.slice(this.#start, this.#current))
+        );
     }
 }
 
