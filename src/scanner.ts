@@ -113,6 +113,10 @@ class Scanner {
                 this.#line++;
                 break;
 
+            case '"':
+                this.#string();
+                break;
+
             default:
                 this.#errors.push(
                     syntaxError(this.#line, `Unexpected character: '${char}'`)
@@ -140,6 +144,27 @@ class Scanner {
 
     #peek() {
         return this.#source[this.#current] ?? "\0";
+    }
+
+    #string() {
+        while (this.#peek() !== '"' && !this.#isAtEnd()) {
+            if (this.#peek() === "\n") this.#line++;
+            this.#advance();
+        }
+
+        if (this.#isAtEnd()) {
+            this.#errors.push(
+                syntaxError(this.#line, "Unterminated string.")
+            );
+            return;
+        }
+
+        // The closing quote.
+        this.#advance();
+
+        // Trim the surrounding quotes.
+        const value = this.#source.slice(this.#start + 1, this.#current - 1);
+        this.#addToken(TOKEN_TYPE.STRING, value);
     }
 }
 
