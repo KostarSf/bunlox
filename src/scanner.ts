@@ -1,7 +1,7 @@
 import { LoxError, syntaxError, type SyntaxLoxError } from "./error";
 import { token, type Literal, type Token } from "./token";
 import { TOKEN_KEYWORDS } from "./token-keywords";
-import { TOKEN_TYPES, type TokenType } from "./token-types";
+import { type TokenType } from "./token-types";
 
 class Scanner {
     #source: string;
@@ -24,7 +24,7 @@ class Scanner {
             this.#scanToken();
         }
 
-        this.#tokens.push(token({ type: TOKEN_TYPES.EOF, line: this.#line }));
+        this.#tokens.push(token("EOF"));
 
         if (this.#errors.length > 0) {
             throw new LoxError("Syntax error", this.#errors);
@@ -42,59 +42,47 @@ class Scanner {
 
         switch (char) {
             case "(":
-                this.#addToken(TOKEN_TYPES.LEFT_PAREN);
+                this.#addToken("LEFT_PAREN");
                 break;
             case ")":
-                this.#addToken(TOKEN_TYPES.RIGHT_PAREN);
+                this.#addToken("RIGHT_PAREN");
                 break;
             case "{":
-                this.#addToken(TOKEN_TYPES.LEFT_BRACE);
+                this.#addToken("LEFT_BRACE");
                 break;
             case "}":
-                this.#addToken(TOKEN_TYPES.RIGHT_BRACE);
+                this.#addToken("RIGHT_BRACE");
                 break;
             case ",":
-                this.#addToken(TOKEN_TYPES.COMMA);
+                this.#addToken("COMMA");
                 break;
             case ".":
-                this.#addToken(TOKEN_TYPES.DOT);
+                this.#addToken("DOT");
                 break;
             case "-":
-                this.#addToken(TOKEN_TYPES.MINUS);
+                this.#addToken("MINUS");
                 break;
             case "+":
-                this.#addToken(TOKEN_TYPES.PLUS);
+                this.#addToken("PLUS");
                 break;
             case ";":
-                this.#addToken(TOKEN_TYPES.SEMICOLON);
+                this.#addToken("SEMICOLON");
                 break;
             case "*":
-                this.#addToken(TOKEN_TYPES.STAR);
+                this.#addToken("STAR");
                 break;
 
             case "!":
-                this.#addToken(
-                    this.#match("=") ? TOKEN_TYPES.BANG_EQUAL : TOKEN_TYPES.BANG
-                );
+                this.#addToken(this.#match("=") ? "BANG_EQUAL" : "BANG");
                 break;
             case "=":
-                this.#addToken(
-                    this.#match("=")
-                        ? TOKEN_TYPES.EQUAL_EQUAL
-                        : TOKEN_TYPES.EQUAL
-                );
+                this.#addToken(this.#match("=") ? "EQUAL_EQUAL" : "EQUAL");
                 break;
             case "<":
-                this.#addToken(
-                    this.#match("=") ? TOKEN_TYPES.LESS_EQUAL : TOKEN_TYPES.LESS
-                );
+                this.#addToken(this.#match("=") ? "LESS_EQUAL" : "LESS");
                 break;
             case ">":
-                this.#addToken(
-                    this.#match("=")
-                        ? TOKEN_TYPES.GREATER_EQUAL
-                        : TOKEN_TYPES.GREATER
-                );
+                this.#addToken(this.#match("=") ? "GREATER_EQUAL" : "GREATER");
                 break;
 
             case "/":
@@ -103,7 +91,7 @@ class Scanner {
                         this.#advance();
                     }
                 } else {
-                    this.#addToken(TOKEN_TYPES.SLASH);
+                    this.#addToken("SLASH");
                 }
                 break;
 
@@ -143,7 +131,7 @@ class Scanner {
 
     #addToken(type: TokenType, literal: Literal = null) {
         const lexeme = this.#source.slice(this.#start, this.#current);
-        this.#tokens.push(token({ type, lexeme, literal, line: this.#line }));
+        this.#tokens.push(token(type, lexeme, literal, this.#line));
     }
 
     #match(expected: string) {
@@ -174,7 +162,7 @@ class Scanner {
 
         // Trim the surrounding quotes.
         const value = this.#source.slice(this.#start + 1, this.#current - 1);
-        this.#addToken(TOKEN_TYPES.STRING, value);
+        this.#addToken("STRING", value);
     }
 
     #isDigit(char: string) {
@@ -194,7 +182,7 @@ class Scanner {
         }
 
         this.#addToken(
-            TOKEN_TYPES.NUMBER,
+            "NUMBER",
             parseFloat(this.#source.slice(this.#start, this.#current))
         );
     }
@@ -206,7 +194,7 @@ class Scanner {
 
         const text = this.#source.slice(this.#start, this.#current);
         const type = TOKEN_KEYWORDS[text];
-        this.#addToken(type ?? TOKEN_TYPES.IDENTIFIER);
+        this.#addToken(type ?? "IDENTIFIER");
     }
 
     #isAlpha(char: string) {
