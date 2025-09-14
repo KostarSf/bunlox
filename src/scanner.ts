@@ -24,7 +24,7 @@ class Scanner {
             this.#scanToken();
         }
 
-        this.#tokens.push(token("EOF"));
+        this.#tokens.push(token({ type: "EOF", line: this.#line }));
 
         if (this.#errors.length > 0) {
             throw new LoxError("Syntax error", this.#errors);
