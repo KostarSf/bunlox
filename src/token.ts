@@ -16,14 +16,24 @@ export class Token {
         this.lexeme = args.lexeme ?? "";
         this.literal = args.literal ?? null;
         this.line = args.line ?? 1;
+        Object.freeze(this);
     }
 
     toString(): string {
         return `Token { type: ${this.type}, lexeme: ${this.lexeme}, literal: ${this.literal}, line: ${this.line} }`;
     }
 
-    [Symbol.for("nodejs.util.inspect.custom")](): string {
+    [Symbol.for("nodejs.util.inspect.custom")]() {
         return this.toString();
+    }
+
+    toJSON() {
+        return {
+            type: this.type,
+            lexeme: this.lexeme,
+            literal: this.literal,
+            line: this.line,
+        };
     }
 }
 
