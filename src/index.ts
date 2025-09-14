@@ -1,3 +1,5 @@
+import { LoxError } from "./error";
+
 if (Bun.argv.length > 3) {
     console.log("Usage: bunlox <input>");
     process.exit(64);
@@ -20,14 +22,22 @@ async function runPrompt() {
     process.stdout.write("> ");
     for await (const line of console) {
         if (line === "exit") break;
-        await run(line);
+        try {
+            await run(line);
+        } catch (error) {
+            if (error instanceof LoxError) {
+                console.error(error.message);
+            } else {
+                console.error(error);
+            }
+        }
         process.stdout.write("> ");
     }
 }
 
 async function run(source: string) {
     const tokens = source.split(" ");
-    tokens.forEach(token => {
+    tokens.forEach((token) => {
         console.log(token);
     });
 }
