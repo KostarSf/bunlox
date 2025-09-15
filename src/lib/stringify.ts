@@ -18,7 +18,7 @@ export function stringify(value: unknown): string {
     }
 
     if (typeof value === "string") {
-        const color = Bun.color("green", "ansi");
+        const color = Bun.color("lightgreen", "ansi");
         return `${color}"${value}"${resetColor}`;
     }
 

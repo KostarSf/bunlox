@@ -104,15 +104,17 @@ const visitBinary = (expr: BinaryExpr) => {
                 ensureNumber(right, expr.operator)
             );
         case "PLUS":
-            if (typeof left === "number" && typeof right === "number") {
-                return left + right;
+            const types = [typeof left, typeof right];
+            if (types.every((type) => type === "number")) {
+                return (left as number) + (right as number);
             }
-            if (typeof left === "string" && typeof right === "string") {
-                return left + right;
+            if (types.every((type) => type === "string" || type === "number")) {
+                return `${left}${right}`;
             }
+
             throw runtimeError(
                 expr.operator,
-                `Operands of ${expr.operator.lexeme} must be two numbers or two strings`
+                `Operands of ${expr.operator.lexeme} must be numbers or strings`
             );
         case "EQUAL_EQUAL":
             return isEqual(left, right);
