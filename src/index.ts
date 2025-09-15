@@ -31,11 +31,28 @@ async function runFile(file: string) {
 
 async function runPrompt() {
     console.log("Welcome to BunLox v0.1.0.");
-    console.log("Type \".exit\" or use Ctrl+C to quit.");
+    console.log("Type \".help\" for more information.");
 
     process.stdout.write("> ");
     for await (const line of console) {
         if (line === ".exit") break;
+        if (line === ".clear") {
+            console.clear();
+            process.stdout.write("> ");
+            continue;
+        }
+        if (line === ".help") {
+            console.log(".clear    Clear the console.");
+            console.log(".exit     Exit the REPL.");
+            console.log("\nPress Ctrl+C to exit the REPL.");
+            process.stdout.write("> ");
+            continue;
+        }
+        if (line === "") {
+            process.stdout.write("> ");
+            continue;
+        }
+
         try {
             await run(line);
         } catch (error) {
