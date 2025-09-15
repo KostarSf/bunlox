@@ -1,5 +1,5 @@
-import { LoxError, syntaxError, type SyntaxLoxError } from "./error";
-import { token, type Literal, type Token } from "./token";
+import { LoxError, syntaxError, type SyntaxError } from "./error";
+import { token, type Literal } from "./token";
 import { TOKEN_KEYWORDS } from "./token-keywords";
 import type { TokenType } from "./token-types";
 
@@ -27,11 +27,11 @@ const TWO_CHAR_OPERATORS: Record<
     ">": { withEq: "GREATER_EQUAL", withoutEq: "GREATER" },
 };
 
-export function* scanTokens(source: string): Generator<Token> {
+export function* scanTokens(source: string) {
     let start = 0;
     let current = 0;
     let line = 1;
-    const errors: SyntaxLoxError[] = [];
+    const errors: SyntaxError[] = [];
 
     const isAtEnd = () => current >= source.length;
     const peek = (offset = 0) => source[current + offset] ?? "\0";

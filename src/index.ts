@@ -1,4 +1,6 @@
 import { LoxError } from "./error";
+import { printAst } from "./lib/ast-printer";
+import { parseAst } from "./parser";
 import { scanTokens } from "./scanner";
 
 if (Bun.argv.length > 3) {
@@ -48,8 +50,7 @@ async function runPrompt() {
 }
 
 async function run(source: string) {
-    const tokens = scanTokens(source);
-    for (const token of tokens) {
-        console.log(token);
-    }
+    const tokens = Array.from(scanTokens(source));
+    const ast = parseAst(tokens);
+    console.log(printAst(ast));
 }
