@@ -1,6 +1,7 @@
 import { createEnvironment } from "./core/environment";
 import { runtimeError } from "./core/error";
 import type {
+    AssignmentExpr,
     BinaryExpr,
     Expr,
     GroupingExpr,
@@ -64,7 +65,15 @@ function evaluate(ast: Expr): Literal {
             return visitBinary(ast);
         case "variable":
             return visitVariable(ast);
+        case "assignment":
+            return visitAssignment(ast);
     }
+}
+
+const visitAssignment = (expr: AssignmentExpr) => {
+    const value = evaluate(expr.value);
+    environment.assign(expr.name, value);
+    return value;
 }
 
 const visitVariable = (expr: VariableExpr) => environment.get(expr.name);

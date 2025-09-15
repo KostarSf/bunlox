@@ -27,8 +27,10 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  * printStmt      → "print" expression ";"
  *
  *
- * expression     → equality
+ * expression     → assignment
  *
+ * assignment     → IDENTIFIER "=" assignment
+ *                  | equality
  * equality       → comparison ( ( "!=" | "==" ) comparison )*
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )*
  * term           → factor ( ( "-" | "+" ) factor )*
@@ -74,7 +76,23 @@ function parseTokensStream(stream: TokenStream) {
         return st.expr(expr);
     };
 
-    const expression = (): Expr => equality();
+    const expression = (): Expr => assignment();
+    const assignment = (): Expr => {
+        const expr = equality();
+
+        if (match("EQUAL")) {
+            const equals = previous();
+            const value = assignment();
+
+            if (expr.type === "variable") {
+                return ex.assignment(expr.name, value);
+            }
+
+            errors.push(parseError(equals, "Invalid assignment target."));
+        }
+
+        return expr;
+    };
     const equality = (): Expr =>
         leftSeries(() => comparison(), ["BANG_EQUAL", "EQUAL_EQUAL"]);
     const comparison = (): Expr =>

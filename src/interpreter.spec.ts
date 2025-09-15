@@ -1,13 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
 import {
+    assignment,
     binary,
     grouping,
     literal,
     unary,
+    variable,
     type Expr,
 } from "./core/expressions";
 import * as st from "./core/statements";
+import type { Stmt } from "./core/statements";
 import { token } from "./core/token";
 import type { TokenType } from "./core/token-types";
 import { interpret } from "./interpreter";
@@ -28,6 +31,20 @@ function runAndCapture(ast: Expr) {
     return Bun.stripANSI(out[0] ?? "");
 }
 
+function runStmtsAndCapture(statements: Stmt[]) {
+    const original = console.log;
+    const out: string[] = [];
+    console.log = (msg?: unknown) => {
+        out.push(String(msg ?? ""));
+    };
+    try {
+        interpret(statements, true);
+    } finally {
+        console.log = original;
+    }
+    return out.map((s) => Bun.stripANSI(s));
+}
+
 describe("Interpreter", () => {
     test("mathematical operations", () => {
         expect(
@@ -45,6 +62,57 @@ describe("Interpreter", () => {
         expect(
             runAndCapture(binary(literal(4), t("STAR", "*"), literal(2)))
         ).toBe("8");
+    });
+
+    test("variable declaration with initializer and usage", () => {
+        const x = token("IDENTIFIER", "x_init");
+        const outputs = runStmtsAndCapture([
+            st.varDecl(x, literal(10)),
+            st.expr(variable(x)),
+        ]);
+        expect(outputs).toEqual(["10"]);
+    });
+
+    test("variable declaration without initializer defaults to nil", () => {
+        const x = token("IDENTIFIER", "x_nil");
+        const outputs = runStmtsAndCapture([
+            st.varDecl(x, null),
+            st.expr(variable(x)),
+        ]);
+        expect(outputs).toEqual(["nil"]);
+    });
+
+    test("assignment updates variable value", () => {
+        const x = token("IDENTIFIER", "x_assign");
+        const outputs = runStmtsAndCapture([
+            st.varDecl(x, literal(1)),
+            st.expr(assignment(x, literal(2))),
+            st.expr(variable(x)),
+        ]);
+        expect(outputs).toEqual(["2", "2"]);
+    });
+
+    test("variable can be used in arithmetic expressions", () => {
+        const x = token("IDENTIFIER", "x_arith");
+        const outputs = runStmtsAndCapture([
+            st.varDecl(x, literal(2)),
+            st.expr(binary(variable(x), t("PLUS", "+"), literal(3))),
+        ]);
+        expect(outputs).toEqual(["5"]);
+    });
+
+    test("reading undefined variable throws", () => {
+        const y = token("IDENTIFIER", "never_defined_1");
+        expect(() => interpret([st.expr(variable(y))], true)).toThrow(
+            /Undefined variable 'never_defined_1'\./
+        );
+    });
+
+    test("assigning to undefined variable throws", () => {
+        const x = token("IDENTIFIER", "never_defined_2");
+        expect(() => interpret([st.expr(assignment(x, literal(1)))], true)).toThrow(
+            /Undefined variable 'never_defined_2'\./
+        );
     });
 
     test("parentheses affect precedence", () => {

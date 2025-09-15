@@ -16,5 +16,13 @@ export function createEnvironment() {
         return value;
     };
 
-    return { define, get };
+    const assign = (name: Token, value: Literal) => {
+        if (values.has(name.lexeme)) {
+            values.set(name.lexeme, value);
+            return;
+        }
+        throw runtimeError(name, `Undefined variable '${name.lexeme}'.`);
+    };
+
+    return { define, get, assign };
 }

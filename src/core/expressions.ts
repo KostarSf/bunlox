@@ -28,12 +28,19 @@ export type VariableExpr = {
     name: Token;
 };
 
+export type AssignmentExpr = {
+    type: "assignment";
+    name: Token;
+    value: Expr;
+};
+
 export type Expr =
     | LiteralExpr
     | GroupingExpr
     | BinaryExpr
     | UnaryExpr
-    | VariableExpr;
+    | VariableExpr
+    | AssignmentExpr;
 
 export const binary = (left: Expr, operator: Token, right: Expr) =>
     ({ type: "binary", left, operator, right } satisfies BinaryExpr);
@@ -49,3 +56,6 @@ export const unary = (operator: Token, right: Expr) =>
 
 export const variable = (name: Token) =>
     ({ type: "variable", name } satisfies VariableExpr);
+
+export const assignment = (name: Token, value: Expr) =>
+    ({ type: "assignment", name, value } satisfies AssignmentExpr);

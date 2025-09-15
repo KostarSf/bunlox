@@ -44,5 +44,7 @@ function printExpr(expr: Expr): string {
             return `(${expr.operator.lexeme} ${printAst(expr.right)})`;
         case "variable":
             return `(${expr.name.lexeme})`;
+        case "assignment":
+            return `(${expr.name.lexeme} = ${printAst(expr.value)})`;
     }
 }
