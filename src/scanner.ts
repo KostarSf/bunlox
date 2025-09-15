@@ -105,6 +105,11 @@ export function* scanTokens(source: string) {
             continue;
         }
 
+        if (ch === "'") {
+            errors.push(syntaxError(line, "Single quotes are not supported."));
+            continue;
+        }
+
         // Two-char operators
         const pair = TWO_CHAR_OPERATORS[ch];
         if (pair) {
@@ -132,8 +137,9 @@ export function* scanTokens(source: string) {
         errors.push(syntaxError(line, `Unexpected character: '${ch}'`));
     }
 
-    yield token({ type: "EOF", line });
     if (errors.length > 0) {
         throw new LoxError("Syntax error", errors);
     }
+
+    yield token({ type: "EOF", line });
 }

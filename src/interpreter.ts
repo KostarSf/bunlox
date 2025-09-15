@@ -6,13 +6,39 @@ import type {
     LiteralExpr,
     UnaryExpr,
 } from "./expressions";
+import { color } from "./lib/colors";
 import { stringify } from "./lib/stringify";
+import type { ExprStmt, PrintStmt, Stmt } from "./statements";
 import type { Literal, Token } from "./token";
 
-export function interpret(ast: Expr) {
-    const value = evaluate(ast);
-    console.log(stringify(value));
+export function interpret(statements: Stmt[], repl?: boolean) {
+    for (const statement of statements) {
+        let value = execute(statement);
+        if (repl && value !== undefined) {
+            const stringValue = stringify(value);
+            console.log(color("darkgray", stringValue));
+        }
+    }
 }
+
+const execute = (stmt: Stmt) => {
+    switch (stmt.type) {
+        case "exprStmt":
+            return visitExpressionStmt(stmt);
+        case "printStmt":
+            return visitPrintStmt(stmt);
+    }
+};
+
+const visitExpressionStmt = (expr: ExprStmt) => {
+    return evaluate(expr.expression);
+};
+
+const visitPrintStmt = (expr: PrintStmt) => {
+    const value = evaluate(expr.expression);
+    console.log(stringify(value));
+    return undefined;
+};
 
 function evaluate(ast: Expr): Literal {
     switch (ast.type) {

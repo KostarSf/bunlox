@@ -4,10 +4,12 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "dev": "cross-env NODE_ENV=development bun run src/index.ts",
     "start": "bun run src/index.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "1.2.22",
+    "cross-env": "^10.0.0"
   },
   "peerDependencies": {
     "typescript": "^5"

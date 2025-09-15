@@ -1,4 +1,4 @@
-import type { Token } from "./token";
+import { type Token } from "./token";
 
 export interface TokenStream {
     peek(k?: number): Token;
@@ -14,7 +14,10 @@ export function fromArray(tokens: Token[]): TokenStream {
     const peek = (k = 0) => {
         const i = index + k;
         const t = tokens[i];
-        if (!t) throw new Error(`Token index out of range: ${i} (last is ${tokens.length - 1})`);
+        if (!t)
+            throw new Error(
+                `Token index out of range: ${i} (last is ${tokens.length - 1})`
+            );
         return t;
     };
 
@@ -54,7 +57,10 @@ export function fromIterable(iterable: Iterable<Token>): TokenStream {
         const i = index + k;
         fillUntil(i);
         const t = buffer[i];
-        if (!t) throw new Error(`Token index out of range while reading generator at ${i}`);
+        if (!t)
+            throw new Error(
+                `Token index out of range while reading generator at ${i}`
+            );
         return t;
     };
 

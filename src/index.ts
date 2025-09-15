@@ -1,5 +1,6 @@
 import { LoxError, RuntimeError } from "./error";
 import { interpret } from "./interpreter";
+import { color } from "./lib/colors";
 import { measure } from "./lib/measure";
 import { parseAst } from "./parser";
 import { scanTokens } from "./scanner";
@@ -39,6 +40,9 @@ async function runFile(file: string) {
 async function runPrompt() {
     console.log("Welcome to BunLox v0.1.0.");
     console.log('Type ".help" for more information.');
+    if (Bun.env.NODE_ENV === "development") {
+        console.log(color("gray", "Debug mode enabled."));
+    }
 
     process.stdout.write("> ");
     for await (const line of console) {
@@ -61,7 +65,7 @@ async function runPrompt() {
         }
 
         try {
-            await run(line);
+            await run(ensureFinalSemicolon(line), true);
         } catch (error) {
             if (error instanceof LoxError) {
                 console.error(error.message);
@@ -73,7 +77,7 @@ async function runPrompt() {
     }
 }
 
-async function run(source: string) {
+async function run(source: string, repl?: boolean) {
     const scanMeasureFinish = measure("Scan tokens");
     const tokens = scanTokens(source);
     scanMeasureFinish();
@@ -83,6 +87,14 @@ async function run(source: string) {
     parseMeasureFinish();
 
     const interpretMeasureFinish = measure("Interpret AST");
-    interpret(ast);
+    interpret(ast, repl);
     interpretMeasureFinish();
+}
+
+/**
+ * Ensures the line ends with a semicolon or a closing brace for REPL mode.
+ */
+function ensureFinalSemicolon(line: string) {
+    if ([";", "}"].includes(line[line.length - 1] ?? "")) return line;
+    return line + ";";
 }

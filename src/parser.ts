@@ -1,6 +1,8 @@
 import { LoxError, parseError, ParseError } from "./error";
 import type { Expr } from "./expressions";
 import * as ex from "./expressions";
+import type { Stmt } from "./statements";
+import * as st from "./statements";
 import type { Token } from "./token";
 import type { TokenStream } from "./token-stream";
 import { fromArray, fromIterable } from "./token-stream";
@@ -8,6 +10,13 @@ import type { TokenType } from "./token-types";
 
 /*
  * Grammar:
+ *
+ * program        → statement* EOF
+ *
+ * statement      → exprStmt | printStmt
+ *
+ * exprStmt       → expression ";"
+ * printStmt      → "print" expression ";"
  *
  * expression     → equality
  * equality       → comparison ( ( "!=" | "==" ) comparison )*
@@ -21,8 +30,24 @@ import type { TokenType } from "./token-types";
 /**
  * @throws {ParseError}
  */
-function parseWithStream(stream: TokenStream) {
+function parseTokensStream(stream: TokenStream) {
+    const statements: Stmt[] = [];
     const errors: ParseError[] = [];
+
+    const statement = (): Stmt => {
+        if (match("PRINT")) return printStatement();
+        return expressionStatement();
+    };
+    const printStatement = (): Stmt => {
+        const value = expression();
+        consume("SEMICOLON", "Expect ';' after value.");
+        return st.print(value);
+    };
+    const expressionStatement = (): Stmt => {
+        const expr = expression();
+        consume("SEMICOLON", "Expect ';' after expression.");
+        return st.expr(expr);
+    };
 
     const expression = (): Expr => equality();
     const equality = (): Expr =>
@@ -86,7 +111,7 @@ function parseWithStream(stream: TokenStream) {
     };
 
     const synchronize = () => {
-        advance();
+        if (!isAtEnd()) advance();
 
         while (!isAtEnd()) {
             if (previous().type === "SEMICOLON") return;
@@ -107,23 +132,34 @@ function parseWithStream(stream: TokenStream) {
         }
     };
 
-    try {
-        return expression();
-    } catch (error) {
-        if (error instanceof ParseError) {
-            errors.push(error);
-            throw new LoxError("Syntax error", errors);
-        } else {
-            throw error;
+    while (!isAtEnd()) {
+        try {
+            statements.push(statement());
+        } catch (error) {
+            if (error instanceof ParseError) {
+                errors.push(error);
+                synchronize();
+            } else {
+                throw error;
+            }
         }
     }
+
+    if (errors.length > 0) {
+        throw new LoxError("Syntax error", errors);
+    }
+
+    return statements;
 }
 
-/** Unified parse: accepts Token[] or any Iterable<Token> */
+/**
+ * Unified parse: accepts Token[] or any Iterable<Token>
+ * @throws {ParseError}
+ */
 export function parseAst(tokensOrIterable: Token[] | Iterable<Token>) {
     const isArray = Array.isArray(tokensOrIterable);
     const stream = isArray
         ? fromArray(tokensOrIterable as Token[])
         : fromIterable(tokensOrIterable as Iterable<Token>);
-    return parseWithStream(stream);
+    return parseTokensStream(stream);
 }

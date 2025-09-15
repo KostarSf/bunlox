@@ -1,12 +1,11 @@
-import { describe, test, expect } from "bun:test";
-import { interpret } from "./interpreter";
+import { describe, expect, test } from "bun:test";
+
 import { binary, grouping, literal, unary } from "./expressions";
+import { interpret } from "./interpreter";
 import { token } from "./token";
 import type { TokenType } from "./token-types";
 
 const t = (type: TokenType, lexeme: string) => token(type, lexeme);
-
-const stripAnsi = (input: string) => input.replace(/\x1B\[[0-?]*[ -\/]*[@-~]/g, "");
 
 function runAndCapture(ast: any) {
     const original = console.log;
@@ -19,7 +18,7 @@ function runAndCapture(ast: any) {
     } finally {
         console.log = original;
     }
-    return stripAnsi(out[0] ?? "");
+    return Bun.stripANSI(out[0] ?? "");
 }
 
 describe("Interpreter", () => {
@@ -84,9 +83,7 @@ describe("Interpreter", () => {
         ).toBe("true");
 
         expect(
-            runAndCapture(
-                binary(literal(1), t("BANG_EQUAL", "!="), literal(2))
-            )
+            runAndCapture(binary(literal(1), t("BANG_EQUAL", "!="), literal(2)))
         ).toBe("true");
 
         expect(
@@ -104,9 +101,7 @@ describe("Interpreter", () => {
         ).toBe("true");
 
         expect(
-            runAndCapture(
-                binary(literal(2), t("LESS_EQUAL", "<="), literal(2))
-            )
+            runAndCapture(binary(literal(2), t("LESS_EQUAL", "<="), literal(2)))
         ).toBe("true");
 
         // Different types are not equal

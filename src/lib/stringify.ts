@@ -1,25 +1,21 @@
-export function stringify(value: unknown): string {
-    const resetColor = Bun.color("white", "ansi");
+import { color } from "./colors";
 
+export function stringify(value: unknown): string {
     if (value === null || value === undefined) {
-        const color = Bun.color("lightgray", "ansi");
-        return `${color}nil${resetColor}`;
+        return color("lightgray", "nil");
     }
 
     if (typeof value === "boolean") {
-        const color = Bun.color("yellow", "ansi");
         const boolStr = value ? "true" : "false";
-        return `${color}${boolStr}${resetColor}`;
+        return color("yellow", boolStr);
     }
 
     if (typeof value === "number") {
-        const color = Bun.color("yellow", "ansi");
-        return `${color}${value.toString()}${resetColor}`;
+        return color("yellow", value.toString());
     }
 
     if (typeof value === "string") {
-        const color = Bun.color("lightgreen", "ansi");
-        return `${color}"${value}"${resetColor}`;
+        return color("lightgreen", `"${value}"`);
     }
 
     if (typeof value === "object") {
