@@ -6,6 +6,18 @@ import type { TokenStream } from "./token-stream";
 import { fromArray, fromIterable } from "./token-stream";
 import type { TokenType } from "./token-types";
 
+/*
+ * Grammar:
+ *
+ * expression     → equality
+ * equality       → comparison ( ( "!=" | "==" ) comparison )*
+ * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )*
+ * term           → factor ( ( "-" | "+" ) factor )*
+ * factor         → unary ( ( "/" | "*" ) unary )*
+ * unary          → ( "!" | "-" ) unary | primary
+ * primary        → "true" | "false" | "nil" | NUMBER | STRING | "(" expression ")"
+ */
+
 /**
  * @throws {ParseError}
  */
