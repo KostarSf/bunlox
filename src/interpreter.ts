@@ -1,3 +1,4 @@
+import { createEnvironment } from "./core/environment";
 import { runtimeError } from "./core/error";
 import type {
     BinaryExpr,
@@ -5,11 +6,14 @@ import type {
     GroupingExpr,
     LiteralExpr,
     UnaryExpr,
+    VariableExpr,
 } from "./core/expressions";
-import type { ExprStmt, PrintStmt, Stmt } from "./core/statements";
+import type { ExprStmt, PrintStmt, Stmt, VarDeclStmt } from "./core/statements";
 import type { Literal, Token } from "./core/token";
 import { color } from "./lib/colors";
 import { stringify } from "./lib/stringify";
+
+const environment = createEnvironment();
 
 export function interpret(statements: Stmt[], repl?: boolean) {
     for (const statement of statements) {
@@ -27,6 +31,8 @@ const execute = (stmt: Stmt) => {
             return visitExpressionStmt(stmt);
         case "printStmt":
             return visitPrintStmt(stmt);
+        case "varDecl":
+            return visitVarDeclStmt(stmt);
     }
 };
 
@@ -40,6 +46,12 @@ const visitPrintStmt = (expr: PrintStmt) => {
     return undefined;
 };
 
+const visitVarDeclStmt = (stmt: VarDeclStmt) => {
+    const value = stmt.initializer === null ? null : evaluate(stmt.initializer);
+    environment.define(stmt.name.lexeme, value);
+    return undefined;
+};
+
 function evaluate(ast: Expr): Literal {
     switch (ast.type) {
         case "literal":
@@ -50,8 +62,12 @@ function evaluate(ast: Expr): Literal {
             return visitUnary(ast);
         case "binary":
             return visitBinary(ast);
+        case "variable":
+            return visitVariable(ast);
     }
 }
+
+const visitVariable = (expr: VariableExpr) => environment.get(expr.name);
 
 const visitLiteral = (expr: LiteralExpr) => expr.value;
 

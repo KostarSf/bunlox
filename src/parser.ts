@@ -48,6 +48,17 @@ function parseTokensStream(stream: TokenStream) {
     const statements: Stmt[] = [];
     const errors: ParseError[] = [];
 
+    const declaration = (): Stmt => {
+        if (match("VAR")) return varDeclaration();
+        return statement();
+    };
+    const varDeclaration = (): Stmt => {
+        const name = consume("IDENTIFIER", "Expect variable name.");
+        const initializer = match("EQUAL") ? expression() : null;
+        consume("SEMICOLON", "Expect ';' after variable declaration.");
+        return st.varDecl(name, initializer);
+    };
+
     const statement = (): Stmt => {
         if (match("PRINT")) return printStatement();
         return expressionStatement();
@@ -85,6 +96,8 @@ function parseTokensStream(stream: TokenStream) {
         if (match("NIL")) return ex.literal(null);
 
         if (match("NUMBER", "STRING")) return ex.literal(previous().literal);
+
+        if (match("IDENTIFIER")) return ex.variable(previous());
 
         if (match("LEFT_PAREN")) {
             const expr = expression();
@@ -148,7 +161,7 @@ function parseTokensStream(stream: TokenStream) {
 
     while (!isAtEnd()) {
         try {
-            statements.push(statement());
+            statements.push(declaration());
         } catch (error) {
             if (error instanceof ParseError) {
                 errors.push(error);

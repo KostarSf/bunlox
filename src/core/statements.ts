@@ -11,13 +11,13 @@ export type PrintStmt = {
     expression: Expr;
 };
 
-export type VarDecl = {
+export type VarDeclStmt = {
     type: "varDecl";
     name: Token;
-    initializer: Expr | undefined;
+    initializer: Expr | null;
 };
 
-export type Stmt = ExprStmt | PrintStmt | VarDecl;
+export type Stmt = ExprStmt | PrintStmt | VarDeclStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -25,5 +25,5 @@ export const expr = (expression: Expr) =>
 export const print = (expression: Expr) =>
     ({ type: "printStmt", expression } satisfies PrintStmt);
 
-export const varDecl = (name: Token, initializer?: Expr) =>
-    ({ type: "varDecl", name, initializer } satisfies VarDecl);
+export const varDecl = (name: Token, initializer: Expr | null) =>
+    ({ type: "varDecl", name, initializer } satisfies VarDeclStmt);

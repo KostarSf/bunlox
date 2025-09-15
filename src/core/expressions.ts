@@ -1,4 +1,4 @@
-import type { Token, Literal } from "./token";
+import type { Literal, Token } from "./token";
 
 export type LiteralExpr = {
     type: "literal";
@@ -23,11 +23,17 @@ export type UnaryExpr = {
     right: Expr;
 };
 
+export type VariableExpr = {
+    type: "variable";
+    name: Token;
+};
+
 export type Expr =
     | LiteralExpr
     | GroupingExpr
     | BinaryExpr
-    | UnaryExpr;
+    | UnaryExpr
+    | VariableExpr;
 
 export const binary = (left: Expr, operator: Token, right: Expr) =>
     ({ type: "binary", left, operator, right } satisfies BinaryExpr);
@@ -40,3 +46,6 @@ export const literal = (value: Literal) =>
 
 export const unary = (operator: Token, right: Expr) =>
     ({ type: "unary", operator, right } satisfies UnaryExpr);
+
+export const variable = (name: Token) =>
+    ({ type: "variable", name } satisfies VariableExpr);

@@ -42,5 +42,7 @@ function printExpr(expr: Expr): string {
             return expr.value?.toString() ?? "nil";
         case "unary":
             return `(${expr.operator.lexeme} ${printAst(expr.right)})`;
+        case "variable":
+            return `(${expr.name.lexeme})`;
     }
 }
