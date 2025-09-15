@@ -9,12 +9,13 @@ Reference: [Crafting Interpreters](https://craftinginterpreters.com)
 ## Status
 - Scanner (lexer): implemented with support for single- and two-character operators, strings, numbers, identifiers, and keywords
 - Parser: expression grammar producing an AST (equality, comparison, term, factor, unary, primary)
-- AST printer: pretty-prints expressions in prefix form
+- Interpreter: evaluates expressions (arithmetic, comparison, equality, unary `!`/`-`, `+` for numbers and string concatenation)
+- Stringified output: pretty printing with simple colors in the terminal
+- AST printer: available for debugging
 - REPL: interactive prompt with simple commands
 
 What’s not implemented yet:
-- Statements, declarations, and full program parsing (e.g., `print`, `var`, blocks) beyond tokenization
-- Interpreter runtime, resolver, environment, functions, classes, etc.
+- Statements, declarations, and full program parsing (e.g., `print`, `var`, blocks), control flow, functions, classes, resolver, and environments
 
 ---
 
@@ -48,20 +49,24 @@ REPL commands:
 - `.clear` clear the screen
 - `.exit`  exit the REPL
 
-Example REPL session:
+Example REPL session (now evaluates expressions):
 ```text
 > (-123) * (45.67)
-(* (- 123) (group 45.67))
+-5617.41
 > !true == false
-(== (! true) false)
+true
+> "hello" + " " + "world"
+"hello world"
+> 1 + 2 * 3 == 7
+true
 ```
 
 ### Run a file
 ```bash
-bun run src/index.ts playground/hello.lox
+bun run src/index.ts path/to/program.lox
 ```
 
-Note: At this stage, only expressions are parsed and printed. Statement keywords like `print` are tokenized by the scanner but not yet parsed/executed.
+Note: At this stage, only expressions are parsed and evaluated. Statement keywords like `print` are tokenized by the scanner but not yet parsed/executed.
 
 ---
 
@@ -74,6 +79,7 @@ bun test
 Sample specs:
 - `src/lib/ast-printer.spec.ts`
 - `src/scanner.spec.ts`
+- `src/parser.spec.ts`
 
 ---
 
@@ -82,6 +88,8 @@ Sample specs:
 - `src/scanner.ts` — lexer producing tokens from source
 - `src/parser.ts` — expression parser building an AST
 - `src/expressions.ts` — AST node types and constructors
+- `src/interpreter.ts` — evaluates AST nodes and prints results
+- `src/lib/stringify.ts` — stringifies evaluated values (with basic colors)
 - `src/lib/ast-printer.ts` — prints AST in prefix form
 - `src/token.ts`, `src/token-types.ts`, `src/token-keywords.ts` — token model and definitions
 - `src/error.ts` — error types for scanning/parsing
