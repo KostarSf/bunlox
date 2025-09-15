@@ -1,5 +1,5 @@
-import { LoxError } from "./error";
-import { printAst } from "./lib/ast-printer";
+import { LoxError, RuntimeError } from "./error";
+import { interpret } from "./interpreter";
 import { measure } from "./lib/measure";
 import { parseAst } from "./parser";
 import { scanTokens } from "./scanner";
@@ -24,9 +24,15 @@ async function runFile(file: string) {
     } catch (error) {
         if (error instanceof LoxError) {
             console.error(error.message);
+
+            if (error instanceof RuntimeError) {
+                process.exit(70);
+            }
         } else {
             console.error(error);
         }
+
+        process.exit(65);
     }
 }
 
@@ -76,5 +82,7 @@ async function run(source: string) {
     const ast = parseAst(tokens);
     parseMeasureFinish();
 
-    console.log(printAst(ast));
+    const interpretMeasureFinish = measure("Interpret AST");
+    interpret(ast);
+    interpretMeasureFinish();
 }

@@ -21,6 +21,15 @@ export class ParseError extends LoxError {
     }
 }
 
+export class RuntimeError extends LoxError {
+    token: Token;
+
+    constructor(token: Token, message: string) {
+        super(`[line ${token.line}] Error: ${message}`);
+        this.token = token;
+    }
+}
+
 export function syntaxError(line: number, message: string) {
     return new SyntaxError(line, message);
 }
@@ -31,4 +40,8 @@ export function parseError(token: Token, message: string) {
         token.type === "EOF" ? " at end" : ` at '${token.lexeme}'`,
         message
     );
+}
+
+export function runtimeError(token: Token, message: string) {
+    return new RuntimeError(token, message);
 }
