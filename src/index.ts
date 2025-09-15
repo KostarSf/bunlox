@@ -69,7 +69,7 @@ async function runPrompt() {
 
 async function run(source: string) {
     const scanMeasureFinish = measure("Scan tokens");
-    const tokens = Array.from(scanTokens(source));
+    const tokens = scanTokens(source);
     scanMeasureFinish();
 
     const parseMeasureFinish = measure("Parse tokens");

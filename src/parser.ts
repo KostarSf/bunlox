@@ -2,13 +2,14 @@ import { LoxError, parseError, ParseError } from "./error";
 import type { Expr } from "./expressions";
 import * as ex from "./expressions";
 import type { Token } from "./token";
+import type { TokenStream } from "./token-stream";
+import { fromArray, fromIterable } from "./token-stream";
 import type { TokenType } from "./token-types";
 
 /**
  * @throws {ParseError}
  */
-export function parseAst(tokens: Token[]) {
-    let current = 0;
+function parseWithStream(stream: TokenStream) {
     const errors: ParseError[] = [];
 
     const expression = (): Expr => equality();
@@ -60,21 +61,10 @@ export function parseAst(tokens: Token[]) {
         return false;
     };
     const check = (type: TokenType) => !isAtEnd() && peek().type === type;
-    const advance = () => {
-        if (!isAtEnd()) current++;
-        return previous();
-    };
-    const isAtEnd = () => peek().type === "EOF";
-    const peek = () => get(current);
-    const previous = () => get(current - 1);
-    const get = (index: number) => {
-        const token = tokens[index];
-        if (!token) {
-            const note = `${index} (last is ${tokens.length - 1})`;
-            throw new Error(`Token index is out of range: ${note}`);
-        }
-        return token;
-    };
+    const advance = () => stream.advance();
+    const isAtEnd = () => stream.isAtEnd();
+    const peek = () => stream.peek();
+    const previous = () => stream.previous();
     /**
      * @throws {ParseError}
      */
@@ -115,4 +105,13 @@ export function parseAst(tokens: Token[]) {
             throw error;
         }
     }
+}
+
+/** Unified parse: accepts Token[] or any Iterable<Token> */
+export function parseAst(tokensOrIterable: Token[] | Iterable<Token>) {
+    const isArray = Array.isArray(tokensOrIterable);
+    const stream = isArray
+        ? fromArray(tokensOrIterable as Token[])
+        : fromIterable(tokensOrIterable as Iterable<Token>);
+    return parseWithStream(stream);
 }
