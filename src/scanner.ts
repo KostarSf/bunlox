@@ -1,7 +1,7 @@
-import { LoxError, syntaxError, type SyntaxError } from "./error";
-import { token, type Literal } from "./token";
-import { TOKEN_KEYWORDS } from "./token-keywords";
-import type { TokenType } from "./token-types";
+import { LoxError, syntaxError, type SyntaxError } from "./core/error";
+import { token, type Literal } from "./core/token";
+import { TOKEN_KEYWORDS } from "./core/token-keywords";
+import type { TokenType } from "./core/token-types";
 
 const SINGLE_TOKENS: Record<string, TokenType> = {
     "(": "LEFT_PAREN",

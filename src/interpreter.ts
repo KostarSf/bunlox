@@ -1,15 +1,15 @@
-import { runtimeError } from "./error";
+import { runtimeError } from "./core/error";
 import type {
     BinaryExpr,
     Expr,
     GroupingExpr,
     LiteralExpr,
     UnaryExpr,
-} from "./expressions";
+} from "./core/expressions";
+import type { ExprStmt, PrintStmt, Stmt } from "./core/statements";
+import type { Literal, Token } from "./core/token";
 import { color } from "./lib/colors";
 import { stringify } from "./lib/stringify";
-import type { ExprStmt, PrintStmt, Stmt } from "./statements";
-import type { Literal, Token } from "./token";
 
 export function interpret(statements: Stmt[], repl?: boolean) {
     for (const statement of statements) {

@@ -1,4 +1,4 @@
-import { LoxError, RuntimeError } from "./error";
+import { LoxError, RuntimeError } from "./core/error";
 import { interpret } from "./interpreter";
 import { color } from "./lib/colors";
 import { measure } from "./lib/measure";

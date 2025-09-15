@@ -1,20 +1,27 @@
 import { describe, expect, test } from "bun:test";
 
-import { binary, grouping, literal, unary } from "./expressions";
+import {
+    binary,
+    grouping,
+    literal,
+    unary,
+    type Expr,
+} from "./core/expressions";
+import * as st from "./core/statements";
+import { token } from "./core/token";
+import type { TokenType } from "./core/token-types";
 import { interpret } from "./interpreter";
-import { token } from "./token";
-import type { TokenType } from "./token-types";
 
 const t = (type: TokenType, lexeme: string) => token(type, lexeme);
 
-function runAndCapture(ast: any) {
+function runAndCapture(ast: Expr) {
     const original = console.log;
     const out: string[] = [];
     console.log = (msg?: unknown) => {
         out.push(String(msg ?? ""));
     };
     try {
-        interpret(ast);
+        interpret([st.expr(ast)], true);
     } finally {
         console.log = original;
     }

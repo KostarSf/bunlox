@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
+import { binary, grouping, literal, unary } from "../core/expressions";
+import { token } from "../core/token";
 import { printAst } from "./ast-printer";
-import { binary, grouping, literal, unary } from "../expressions";
-import { token } from "../token";
 
 describe("AST Printer", () => {
     test("should format expression correctly", () => {

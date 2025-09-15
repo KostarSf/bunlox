@@ -1,30 +1,44 @@
-import { LoxError, parseError, ParseError } from "./error";
-import type { Expr } from "./expressions";
-import * as ex from "./expressions";
-import type { Stmt } from "./statements";
-import * as st from "./statements";
-import type { Token } from "./token";
-import type { TokenStream } from "./token-stream";
-import { fromArray, fromIterable } from "./token-stream";
-import type { TokenType } from "./token-types";
+import { LoxError, parseError, ParseError } from "./core/error";
+import type { Expr } from "./core/expressions";
+import * as ex from "./core/expressions";
+import type { Stmt } from "./core/statements";
+import * as st from "./core/statements";
+import type { Token } from "./core/token";
+import type { TokenType } from "./core/token-types";
+import type { TokenStream } from "./lib/token-stream";
+import { fromArray, fromIterable } from "./lib/token-stream";
 
 /*
  * Grammar:
  *
  * program        → statement* EOF
  *
- * statement      → exprStmt | printStmt
+ *
+ * declaration    → varDecl
+ *                  | statement
+ *
+ * varDecl        → "var" IDENTIFIER ( "=" expression )? ";"
+ *
+ *
+ * statement      → exprStmt
+ *                  | printStmt
  *
  * exprStmt       → expression ";"
  * printStmt      → "print" expression ";"
  *
+ *
  * expression     → equality
+ *
  * equality       → comparison ( ( "!=" | "==" ) comparison )*
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )*
  * term           → factor ( ( "-" | "+" ) factor )*
  * factor         → unary ( ( "/" | "*" ) unary )*
- * unary          → ( "!" | "-" ) unary | primary
- * primary        → "true" | "false" | "nil" | NUMBER | STRING | "(" expression ")"
+ * unary          → ( "!" | "-" ) unary
+ *                  | primary
+ * primary        → "true" | "false" | "nil"
+ *                  | NUMBER | STRING
+ *                  | "(" expression ")"
+ *                  | IDENTIFIER
  */
 
 /**
