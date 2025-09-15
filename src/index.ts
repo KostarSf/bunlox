@@ -1,5 +1,6 @@
 import { LoxError } from "./error";
 import { printAst } from "./lib/ast-printer";
+import { measure } from "./lib/measure";
 import { parseAst } from "./parser";
 import { scanTokens } from "./scanner";
 
@@ -31,7 +32,7 @@ async function runFile(file: string) {
 
 async function runPrompt() {
     console.log("Welcome to BunLox v0.1.0.");
-    console.log("Type \".help\" for more information.");
+    console.log('Type ".help" for more information.');
 
     process.stdout.write("> ");
     for await (const line of console) {
@@ -67,7 +68,13 @@ async function runPrompt() {
 }
 
 async function run(source: string) {
+    const scanMeasureFinish = measure("Scan tokens");
     const tokens = Array.from(scanTokens(source));
+    scanMeasureFinish();
+
+    const parseMeasureFinish = measure("Parse tokens");
     const ast = parseAst(tokens);
+    parseMeasureFinish();
+
     console.log(printAst(ast));
 }
