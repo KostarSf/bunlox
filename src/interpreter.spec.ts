@@ -24,7 +24,7 @@ function runAndCapture(ast: Expr) {
         out.push(String(msg ?? ""));
     };
     try {
-        interpret([st.expr(ast)], true);
+        interpret([st.expr(ast)], { repl: true });
     } finally {
         console.log = original;
     }
@@ -38,7 +38,7 @@ function runStmtsAndCapture(statements: Stmt[]) {
         out.push(String(msg ?? ""));
     };
     try {
-        interpret(statements, true);
+        interpret(statements, { repl: true });
     } finally {
         console.log = original;
     }
@@ -103,14 +103,14 @@ describe("Interpreter", () => {
 
     test("reading undefined variable throws", () => {
         const y = token("IDENTIFIER", "never_defined_1");
-        expect(() => interpret([st.expr(variable(y))], true)).toThrow(
+        expect(() => interpret([st.expr(variable(y))], { repl: true })).toThrow(
             /Undefined variable 'never_defined_1'\./
         );
     });
 
     test("assigning to undefined variable throws", () => {
         const x = token("IDENTIFIER", "never_defined_2");
-        expect(() => interpret([st.expr(assignment(x, literal(1)))], true)).toThrow(
+        expect(() => interpret([st.expr(assignment(x, literal(1)))], { repl: true })).toThrow(
             /Undefined variable 'never_defined_2'\./
         );
     });

@@ -1,5 +1,6 @@
+import { createEnvironment } from "./core/environment";
 import { LoxError, RuntimeError } from "./core/error";
-import { interpret } from "./interpreter";
+import { interpret, type InterpreterOptions } from "./interpreter";
 import { color } from "./lib/colors";
 import { measure } from "./lib/measure";
 import { parseAst } from "./parser";
@@ -44,6 +45,8 @@ async function runPrompt() {
         console.log(color("gray", "Debug mode enabled."));
     }
 
+    const environment = createEnvironment();
+
     process.stdout.write("> ");
     for await (const line of console) {
         if (line === ".exit") break;
@@ -65,7 +68,7 @@ async function runPrompt() {
         }
 
         try {
-            await run(ensureFinalSemicolon(line), true);
+            await run(ensureFinalSemicolon(line), { environment, repl: true });
         } catch (error) {
             if (error instanceof LoxError) {
                 console.error(error.message);
@@ -77,7 +80,7 @@ async function runPrompt() {
     }
 }
 
-async function run(source: string, repl?: boolean) {
+async function run(source: string, options?: InterpreterOptions) {
     const scanMeasureFinish = measure("Scan tokens");
     const tokens = scanTokens(source);
     scanMeasureFinish();
@@ -87,7 +90,7 @@ async function run(source: string, repl?: boolean) {
     parseMeasureFinish();
 
     const interpretMeasureFinish = measure("Interpret AST");
-    interpret(ast, repl);
+    interpret(ast, options);
     interpretMeasureFinish();
 }
 

@@ -1,14 +1,20 @@
 import { runtimeError } from "./error";
 import type { Literal, Token } from "./token";
 
-export function createEnvironment() {
+export interface Environment {
+    define: (name: string, value: Literal) => void;
+    get: (name: Token) => Literal;
+    assign: (name: Token, value: Literal) => void;
+}
+
+export function createEnvironment(): Environment {
     const values = new Map<string, Literal>();
 
-    const define = (name: string, value: Literal) => {
+    const define: Environment["define"] = (name, value) => {
         values.set(name, value);
     };
 
-    const get = (name: Token) => {
+    const get: Environment["get"] = (name) => {
         const value = values.get(name.lexeme);
         if (value === undefined) {
             throw runtimeError(name, `Undefined variable '${name.lexeme}'.`);
@@ -16,7 +22,7 @@ export function createEnvironment() {
         return value;
     };
 
-    const assign = (name: Token, value: Literal) => {
+    const assign: Environment["assign"] = (name, value) => {
         if (values.has(name.lexeme)) {
             values.set(name.lexeme, value);
             return;
