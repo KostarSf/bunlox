@@ -6,6 +6,7 @@ import type {
     Expr,
     GroupingExpr,
     LiteralExpr,
+    LogicalExpr,
     UnaryExpr,
     VariableExpr,
 } from "./core/expressions";
@@ -106,6 +107,8 @@ function evaluateExpr(ast: Expr, environment: Environment): Literal {
             return visitUnary(ast, environment);
         case "binary":
             return visitBinary(ast, environment);
+        case "logical":
+            return visitLogical(ast, environment);
         case "variable":
             return visitVariable(ast, environment);
         case "assignment":
@@ -117,6 +120,18 @@ const visitAssignment = (expr: AssignmentExpr, environment: Environment) => {
     const value = evaluateExpr(expr.value, environment);
     environment.assign(expr.name, value);
     return value;
+};
+
+const visitLogical = (expr: LogicalExpr, environment: Environment) => {
+    const left = evaluateExpr(expr.left, environment);
+
+    if (expr.operator.type === "OR") {
+        if (isTruthy(left)) return left;
+    } else {
+        if (!isTruthy(left)) return left;
+    }
+
+    return evaluateExpr(expr.right, environment);
 };
 
 const visitVariable = (expr: VariableExpr, environment: Environment) =>

@@ -323,4 +323,26 @@ describe("Interpreter", () => {
             ]);
         });
     });
+
+    describe("Logical operators", () => {
+        test("or returns first truthy operand", () => {
+            const source = `
+                print "hi" or 2;
+                print nil or "yes";
+            `;
+
+            const outputs = runSourceAndCapture(source);
+            expect(outputs).toEqual(['"hi"', '"yes"']);
+        });
+
+        test("and returns first falsy operand, otherwise last value", () => {
+            const source = `
+                print "hi" and 2;
+                print nil and "yes";
+            `;
+
+            const outputs = runSourceAndCapture(source);
+            expect(outputs).toEqual(["2", "nil"]);
+        });
+    });
 });

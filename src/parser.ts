@@ -31,7 +31,9 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *
  * expression     → assignment
  * assignment     → IDENTIFIER "=" assignment
- *                  | equality
+ *                  | logic_or
+ * logic_or       → logic_and ( "or" logic_and )*
+ * logic_and      → equality ( "and" equality )*
  * equality       → comparison ( ( "!=" | "==" ) comparison )*
  * comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )*
  * term           → factor ( ( "-" | "+" ) factor )*
@@ -100,7 +102,7 @@ function parseTokensStream(stream: TokenStream) {
 
     const expression = (): Expr => assignment();
     const assignment = (): Expr => {
-        const expr = equality();
+        const expr = or();
 
         if (match("EQUAL")) {
             const equals = previous();
@@ -115,15 +117,20 @@ function parseTokensStream(stream: TokenStream) {
 
         return expr;
     };
+    const or = (): Expr => leftSeries(() => and(), ["OR"], "logical");
+    const and = (): Expr => leftSeries(() => equality(), ["AND"], "logical");
     const equality = (): Expr =>
-        leftSeries(() => comparison(), ["BANG_EQUAL", "EQUAL_EQUAL"]);
+        leftSeries(() => comparison(), ["BANG_EQUAL", "EQUAL_EQUAL"], "binary");
     const comparison = (): Expr =>
         leftSeries(
             () => term(),
-            ["GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL"]
+            ["GREATER", "GREATER_EQUAL", "LESS", "LESS_EQUAL"],
+            "binary"
         );
-    const term = (): Expr => leftSeries(() => factor(), ["MINUS", "PLUS"]);
-    const factor = (): Expr => leftSeries(() => unary(), ["SLASH", "STAR"]);
+    const term = (): Expr =>
+        leftSeries(() => factor(), ["MINUS", "PLUS"], "binary");
+    const factor = (): Expr =>
+        leftSeries(() => unary(), ["SLASH", "STAR"], "binary");
     const unary = (): Expr => {
         if (match("BANG", "MINUS")) {
             return ex.unary(previous(), unary());
@@ -149,10 +156,17 @@ function parseTokensStream(stream: TokenStream) {
     };
 
     /**  Method for parsing a left-associative series of binary operators */
-    const leftSeries = (exprFn: () => Expr, matchTypes: TokenType[]) => {
+    const leftSeries = (
+        exprFn: () => Expr,
+        matchTypes: TokenType[],
+        type: "binary" | "logical"
+    ) => {
         let expr = exprFn();
         while (match(...matchTypes)) {
-            expr = ex.binary(expr, previous(), exprFn());
+            expr =
+                type === "binary"
+                    ? ex.binary(expr, previous(), exprFn())
+                    : ex.logical(expr, previous(), exprFn());
         }
         return expr;
     };

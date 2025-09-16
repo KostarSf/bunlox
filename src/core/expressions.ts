@@ -17,6 +17,13 @@ export interface BinaryExpr {
     right: Expr;
 }
 
+export interface LogicalExpr {
+    type: "logical";
+    left: Expr;
+    operator: Token;
+    right: Expr;
+}
+
 export interface UnaryExpr {
     type: "unary";
     operator: Token;
@@ -38,12 +45,16 @@ export type Expr =
     | LiteralExpr
     | GroupingExpr
     | BinaryExpr
+    | LogicalExpr
     | UnaryExpr
     | VariableExpr
     | AssignmentExpr;
 
 export const binary = (left: Expr, operator: Token, right: Expr) =>
     ({ type: "binary", left, operator, right } satisfies BinaryExpr);
+
+export const logical = (left: Expr, operator: Token, right: Expr) =>
+    ({ type: "logical", left, operator, right } satisfies LogicalExpr);
 
 export const grouping = (expression: Expr) =>
     ({ type: "grouping", expression } satisfies GroupingExpr);
