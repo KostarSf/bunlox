@@ -21,6 +21,9 @@ export function printAst(exprOrStmt: Expr | Stmt[]): string {
                         )})`
                     );
                     break;
+                case "block":
+                    statements.push(`(block ${printAst(stmt.statements)})`);
+                    break;
             }
         }
 

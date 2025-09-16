@@ -1,6 +1,11 @@
 import type { Expr } from "./expressions";
 import type { Token } from "./token";
 
+export type BlockStmt = {
+    type: "block";
+    statements: Stmt[];
+};
+
 export type ExprStmt = {
     type: "exprStmt";
     expression: Expr;
@@ -17,7 +22,7 @@ export type VarDeclStmt = {
     initializer: Expr | null;
 };
 
-export type Stmt = ExprStmt | PrintStmt | VarDeclStmt;
+export type Stmt = ExprStmt | PrintStmt | VarDeclStmt | BlockStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -27,3 +32,6 @@ export const print = (expression: Expr) =>
 
 export const varDecl = (name: Token, initializer: Expr | null) =>
     ({ type: "varDecl", name, initializer } satisfies VarDeclStmt);
+
+export const block = (statements: Stmt[]) =>
+    ({ type: "block", statements } satisfies BlockStmt);

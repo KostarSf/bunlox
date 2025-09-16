@@ -16,19 +16,18 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *
  * declaration    → varDecl
  *                  | statement
- *
  * varDecl        → "var" IDENTIFIER ( "=" expression )? ";"
  *
  *
  * statement      → exprStmt
  *                  | printStmt
- *
+ *                  | block
  * exprStmt       → expression ";"
  * printStmt      → "print" expression ";"
+ * block          → "{" declaration* "}"
  *
  *
  * expression     → assignment
- *
  * assignment     → IDENTIFIER "=" assignment
  *                  | equality
  * equality       → comparison ( ( "!=" | "==" ) comparison )*
@@ -63,7 +62,16 @@ function parseTokensStream(stream: TokenStream) {
 
     const statement = (): Stmt => {
         if (match("PRINT")) return printStatement();
+        if (match("LEFT_BRACE")) return st.block(blockStatement());
         return expressionStatement();
+    };
+    const blockStatement = (): Stmt[] => {
+        const statements: Stmt[] = [];
+        while (!check("RIGHT_BRACE") && !isAtEnd()) {
+            statements.push(declaration());
+        }
+        consume("RIGHT_BRACE", "Expect '}' after block.");
+        return statements;
     };
     const printStatement = (): Stmt => {
         const value = expression();
