@@ -35,7 +35,7 @@ export function* scanTokens(source: string) {
 
     const isAtEnd = () => current >= source.length;
     const peek = (offset = 0) => source[current + offset] ?? "\0";
-    const advance = () => source[current++] ?? "";
+    const advance = () => source[current++] ?? "\0";
     const match = (expected: string) => {
         if (isAtEnd() || source[current] !== expected) return false;
         current++;
@@ -49,7 +49,7 @@ export function* scanTokens(source: string) {
     const isAlphaNumeric = (ch: string) => isAlpha(ch) || isDigit(ch);
 
     function* scanString() {
-        while (peek() !== '"' && !isAtEnd()) {
+        while ((peek() !== '"' || peek(-1) === "\\") && !isAtEnd()) {
             if (peek() === "\n") line++;
             advance();
         }
@@ -58,8 +58,55 @@ export function* scanTokens(source: string) {
             return;
         }
         advance(); // closing quote
-        const value = source.slice(start + 1, current - 1);
+        const rawValue = source.slice(start + 1, current - 1);
+        const value = processEscapeSequences(rawValue, line, errors);
         yield makeToken("STRING", value);
+    }
+
+    function processEscapeSequences(
+        raw: string,
+        line: number,
+        errors: SyntaxError[]
+    ): string {
+        let result = "";
+        let i = 0;
+
+        while (i < raw.length) {
+            if (raw[i] === "\\" && i + 1 < raw.length) {
+                const next = raw[i + 1];
+                switch (next) {
+                    case "n":
+                        result += "\n";
+                        break;
+                    case "t":
+                        result += "\t";
+                        break;
+                    case "r":
+                        result += "\r";
+                        break;
+                    case '"':
+                        result += '"';
+                        break;
+                    case "\\":
+                        result += "\\";
+                        break;
+                    default:
+                        errors.push(
+                            syntaxError(
+                                line,
+                                `Invalid escape sequence: \\${next}`
+                            )
+                        );
+                        result += next; // Include the invalid sequence as-is
+                }
+                i += 2; // Skip both characters
+            } else {
+                result += raw[i];
+                i++;
+            }
+        }
+
+        return result;
     }
 
     function* scanNumber() {
