@@ -4,7 +4,7 @@ import type { Literal, Token } from "./token";
 export interface Environment {
     enclosing: Environment | null;
 
-    define: (name: string, value: Literal) => void;
+    define: (name: Token, value: Literal) => void;
     get: (name: Token) => Literal;
     assign: (name: Token, value: Literal) => void;
 }
@@ -15,7 +15,12 @@ export function createEnvironment(
     const values = new Map<string, Literal>();
 
     const define: Environment["define"] = (name, value) => {
-        values.set(name, value);
+        if (enclosing && values.has(name.lexeme)) {
+            const message = `Variable '${name.lexeme}' has already been declared.`;
+            throw runtimeError(name, message);
+        }
+
+        values.set(name.lexeme, value);
     };
 
     const get: Environment["get"] = (name) => {

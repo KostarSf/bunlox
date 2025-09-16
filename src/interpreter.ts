@@ -79,7 +79,7 @@ const visitVarDeclStmt = (stmt: VarDeclStmt, environment: Environment) => {
         stmt.initializer === null
             ? null
             : evaluateExpr(stmt.initializer, environment);
-    environment.define(stmt.name.lexeme, value);
+    environment.define(stmt.name, value);
     return undefined;
 };
 
