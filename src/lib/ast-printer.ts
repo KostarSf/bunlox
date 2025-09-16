@@ -24,6 +24,17 @@ export function printAst(exprOrStmt: Expr | Stmt[]): string {
                 case "block":
                     statements.push(`(block ${printAst(stmt.statements)})`);
                     break;
+                case "ifStmt":
+                    statements.push(
+                        `(if ${printAst(stmt.condition)} then ${printAst([
+                            stmt.thenBranch,
+                        ])}${
+                            stmt.elseBranch
+                                ? ` else ${printAst([stmt.elseBranch])}`
+                                : ""
+                        })`
+                    );
+                    break;
             }
         }
 

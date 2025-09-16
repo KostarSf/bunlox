@@ -12,6 +12,7 @@ import type {
 import type {
     BlockStmt,
     ExprStmt,
+    IfStmt,
     PrintStmt,
     Stmt,
     VarDeclStmt,
@@ -47,6 +48,8 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
     switch (stmt.type) {
         case "exprStmt":
             return visitExpressionStmt(stmt, environment);
+        case "ifStmt":
+            return visitIfStmt(stmt, environment);
         case "printStmt":
             return visitPrintStmt(stmt, environment);
         case "varDecl":
@@ -66,6 +69,16 @@ const visitBlockStmt = (stmt: BlockStmt, enclosing: Environment) => {
 
 const visitExpressionStmt = (expr: ExprStmt, environment: Environment) => {
     return evaluateExpr(expr.expression, environment);
+};
+
+const visitIfStmt = (stmt: IfStmt, environment: Environment) => {
+    const condition = evaluateExpr(stmt.condition, environment);
+    if (isTruthy(condition)) {
+        executeStmt(stmt.thenBranch, environment);
+    } else if (stmt.elseBranch) {
+        executeStmt(stmt.elseBranch, environment);
+    }
+    return undefined;
 };
 
 const visitPrintStmt = (expr: PrintStmt, environment: Environment) => {

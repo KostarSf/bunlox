@@ -297,4 +297,30 @@ describe("Interpreter", () => {
             );
         });
     });
+
+    describe("Control flow", () => {
+        test("if statements with else and dangling else associativity", () => {
+            const source = `
+                var a = 1;
+                if (a > 0) {
+                  print "a is positive";
+                }
+
+                if (a < 0) {
+                  print "a is negative";
+                } else {
+                  print "a is not negative";
+                }
+
+                if (true) if (false) print "false"; else print "true";
+            `;
+
+            const outputs = runSourceAndCapture(source);
+            expect(outputs).toEqual([
+                '"a is positive"',
+                '"a is not negative"',
+                '"true"',
+            ]);
+        });
+    });
 });

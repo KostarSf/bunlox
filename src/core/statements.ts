@@ -1,28 +1,35 @@
 import type { Expr } from "./expressions";
 import type { Token } from "./token";
 
-export type BlockStmt = {
+export interface BlockStmt {
     type: "block";
     statements: Stmt[];
-};
+}
 
-export type ExprStmt = {
+export interface ExprStmt {
     type: "exprStmt";
     expression: Expr;
-};
+}
 
-export type PrintStmt = {
+export interface PrintStmt {
     type: "printStmt";
     expression: Expr;
-};
+}
 
-export type VarDeclStmt = {
+export interface VarDeclStmt {
     type: "varDecl";
     name: Token;
     initializer: Expr | null;
-};
+}
 
-export type Stmt = ExprStmt | PrintStmt | VarDeclStmt | BlockStmt;
+export interface IfStmt {
+    type: "ifStmt";
+    condition: Expr;
+    thenBranch: Stmt;
+    elseBranch: Stmt | null;
+}
+
+export type Stmt = ExprStmt | PrintStmt | VarDeclStmt | BlockStmt | IfStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -35,3 +42,9 @@ export const varDecl = (name: Token, initializer: Expr | null) =>
 
 export const block = (statements: Stmt[]) =>
     ({ type: "block", statements } satisfies BlockStmt);
+
+export const ifStmt = (
+    condition: Expr,
+    thenBranch: Stmt,
+    elseBranch: Stmt | null
+) => ({ type: "ifStmt", condition, thenBranch, elseBranch } satisfies IfStmt);

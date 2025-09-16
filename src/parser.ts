@@ -20,11 +20,13 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *
  *
  * statement      → exprStmt
+ *                  | ifStmt
  *                  | printStmt
  *                  | block
- * exprStmt       → expression ";"
+ * ifStmt         → "if" "(" expression ")" statement ( "else" statement )?
  * printStmt      → "print" expression ";"
  * block          → "{" declaration* "}"
+ * exprStmt       → expression ";"
  *
  *
  * expression     → assignment
@@ -40,6 +42,9 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *                  | NUMBER | STRING
  *                  | "(" expression ")"
  *                  | IDENTIFIER
+ *
+ *
+ * Note: Try to implement pattern matching and pipes later.
  */
 
 /**
@@ -61,9 +66,18 @@ function parseTokensStream(stream: TokenStream) {
     };
 
     const statement = (): Stmt => {
+        if (match("IF")) return ifStatement();
         if (match("PRINT")) return printStatement();
         if (match("LEFT_BRACE")) return st.block(blockStatement());
         return expressionStatement();
+    };
+    const ifStatement = (): Stmt => {
+        consume("LEFT_PAREN", "Expect '(' after 'if'.");
+        const condition = expression();
+        consume("RIGHT_PAREN", "Expect ')' after condition.");
+        const thenBranch = statement();
+        const elseBranch = match("ELSE") ? statement() : null;
+        return st.ifStmt(condition, thenBranch, elseBranch);
     };
     const blockStatement = (): Stmt[] => {
         const statements: Stmt[] = [];

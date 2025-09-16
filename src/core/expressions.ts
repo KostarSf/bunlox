@@ -1,38 +1,38 @@
 import type { Literal, Token } from "./token";
 
-export type LiteralExpr = {
+export interface LiteralExpr {
     type: "literal";
     value: Literal;
-};
+}
 
-export type GroupingExpr = {
+export interface GroupingExpr {
     type: "grouping";
     expression: Expr;
-};
+}
 
-export type BinaryExpr = {
+export interface BinaryExpr {
     type: "binary";
     left: Expr;
     operator: Token;
     right: Expr;
-};
+}
 
-export type UnaryExpr = {
+export interface UnaryExpr {
     type: "unary";
     operator: Token;
     right: Expr;
-};
+}
 
-export type VariableExpr = {
+export interface VariableExpr {
     type: "variable";
     name: Token;
-};
+}
 
-export type AssignmentExpr = {
+export interface AssignmentExpr {
     type: "assignment";
     name: Token;
     value: Expr;
-};
+}
 
 export type Expr =
     | LiteralExpr
