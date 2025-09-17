@@ -22,9 +22,11 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  * statement      → exprStmt
  *                  | ifStmt
  *                  | printStmt
+ *                  | whileStmt
  *                  | block
  * ifStmt         → "if" "(" expression ")" statement ( "else" statement )?
  * printStmt      → "print" expression ";"
+ * whileStmt      → "while" "(" expression ")" statement
  * block          → "{" declaration* "}"
  * exprStmt       → expression ";"
  *
@@ -70,6 +72,7 @@ function parseTokensStream(stream: TokenStream) {
     const statement = (): Stmt => {
         if (match("IF")) return ifStatement();
         if (match("PRINT")) return printStatement();
+        if (match("WHILE")) return whileStatement();
         if (match("LEFT_BRACE")) return st.block(blockStatement());
         return expressionStatement();
     };
@@ -80,6 +83,13 @@ function parseTokensStream(stream: TokenStream) {
         const thenBranch = statement();
         const elseBranch = match("ELSE") ? statement() : null;
         return st.ifStmt(condition, thenBranch, elseBranch);
+    };
+    const whileStatement = (): Stmt => {
+        consume("LEFT_PAREN", "Expect '(' after 'while'.");
+        const condition = expression();
+        consume("RIGHT_PAREN", "Expect ')' after condition.");
+        const body = statement();
+        return st.whileStmt(condition, body);
     };
     const blockStatement = (): Stmt[] => {
         const statements: Stmt[] = [];

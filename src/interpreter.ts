@@ -17,6 +17,7 @@ import type {
     PrintStmt,
     Stmt,
     VarDeclStmt,
+    WhileStmt,
 } from "./core/statements";
 import type { Literal, Token } from "./core/token";
 import { color } from "./lib/colors";
@@ -57,6 +58,8 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
             return visitVarDeclStmt(stmt, environment);
         case "block":
             return visitBlockStmt(stmt, environment);
+        case "whileStmt":
+            return visitWhileStmt(stmt, environment);
     }
 };
 
@@ -94,6 +97,13 @@ const visitVarDeclStmt = (stmt: VarDeclStmt, environment: Environment) => {
             ? null
             : evaluateExpr(stmt.initializer, environment);
     environment.define(stmt.name, value);
+    return undefined;
+};
+
+const visitWhileStmt = (stmt: WhileStmt, environment: Environment) => {
+    while (isTruthy(evaluateExpr(stmt.condition, environment))) {
+        executeStmt(stmt.body, environment);
+    }
     return undefined;
 };
 

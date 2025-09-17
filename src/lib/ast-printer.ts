@@ -35,6 +35,13 @@ export function printAst(exprOrStmt: Expr | Stmt[]): string {
                         })`
                     );
                     break;
+                case "whileStmt":
+                    statements.push(
+                        `(while ${printAst(stmt.condition)} then ${printAst([
+                            stmt.body,
+                        ])})`
+                    );
+                    break;
             }
         }
 
@@ -60,5 +67,9 @@ function printExpr(expr: Expr): string {
             return `(${expr.name.lexeme})`;
         case "assignment":
             return `(${expr.name.lexeme} = ${printAst(expr.value)})`;
+        case "logical":
+            return `(${expr.operator.lexeme} ${printAst(expr.left)} ${printAst(
+                expr.right
+            )})`;
     }
 }

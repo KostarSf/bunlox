@@ -22,6 +22,12 @@ export interface VarDeclStmt {
     initializer: Expr | null;
 }
 
+export interface WhileStmt {
+    type: "whileStmt";
+    condition: Expr;
+    body: Stmt;
+}
+
 export interface IfStmt {
     type: "ifStmt";
     condition: Expr;
@@ -29,7 +35,13 @@ export interface IfStmt {
     elseBranch: Stmt | null;
 }
 
-export type Stmt = ExprStmt | PrintStmt | VarDeclStmt | BlockStmt | IfStmt;
+export type Stmt =
+    | ExprStmt
+    | PrintStmt
+    | VarDeclStmt
+    | BlockStmt
+    | IfStmt
+    | WhileStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -48,3 +60,6 @@ export const ifStmt = (
     thenBranch: Stmt,
     elseBranch: Stmt | null
 ) => ({ type: "ifStmt", condition, thenBranch, elseBranch } satisfies IfStmt);
+
+export const whileStmt = (condition: Expr, body: Stmt) =>
+    ({ type: "whileStmt", condition, body } satisfies WhileStmt);
