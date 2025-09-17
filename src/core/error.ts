@@ -1,4 +1,4 @@
-import type { Token } from "./token";
+import { type Token } from "./token";
 
 export class LoxError extends Error {
     constructor(message: string, nestedErrors: LoxError[] = []) {
@@ -30,6 +30,12 @@ export class RuntimeError extends LoxError {
     }
 }
 
+export class BreakError extends RuntimeError {
+    constructor(token: Token, message: string) {
+        super(token, message);
+    }
+}
+
 export function syntaxError(line: number, message: string) {
     return new SyntaxError(line, message);
 }
@@ -44,4 +50,8 @@ export function parseError(token: Token, message: string) {
 
 export function runtimeError(token: Token, message: string) {
     return new RuntimeError(token, message);
+}
+
+export function breakError(token: Token, message: string) {
+    return new BreakError(token, message);
 }

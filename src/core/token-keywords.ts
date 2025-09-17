@@ -22,4 +22,5 @@ export const TOKEN_KEYWORDS: TokenKeywords = {
     true: TOKEN_TYPES.TRUE,
     var: TOKEN_TYPES.VAR,
     while: TOKEN_TYPES.WHILE,
+    break: TOKEN_TYPES.BREAK,
 };

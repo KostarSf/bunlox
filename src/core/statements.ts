@@ -28,6 +28,11 @@ export interface WhileStmt {
     body: Stmt;
 }
 
+export interface BreakStmt {
+    type: "breakStmt";
+    operator: Token;
+}
+
 export interface IfStmt {
     type: "ifStmt";
     condition: Expr;
@@ -41,7 +46,8 @@ export type Stmt =
     | VarDeclStmt
     | BlockStmt
     | IfStmt
-    | WhileStmt;
+    | WhileStmt
+    | BreakStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -63,3 +69,6 @@ export const ifStmt = (
 
 export const whileStmt = (condition: Expr, body: Stmt) =>
     ({ type: "whileStmt", condition, body } satisfies WhileStmt);
+
+export const breakStmt = (operator: Token) =>
+    ({ type: "breakStmt", operator } satisfies BreakStmt);

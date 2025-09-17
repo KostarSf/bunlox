@@ -1,5 +1,5 @@
 import { createEnvironment, type Environment } from "./core/environment";
-import { runtimeError } from "./core/error";
+import { BreakError, breakError, runtimeError } from "./core/error";
 import type {
     AssignmentExpr,
     BinaryExpr,
@@ -12,6 +12,7 @@ import type {
 } from "./core/expressions";
 import type {
     BlockStmt,
+    BreakStmt,
     ExprStmt,
     IfStmt,
     PrintStmt,
@@ -60,6 +61,8 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
             return visitBlockStmt(stmt, environment);
         case "whileStmt":
             return visitWhileStmt(stmt, environment);
+        case "breakStmt":
+            return visitBreakStmt(stmt);
     }
 };
 
@@ -102,9 +105,20 @@ const visitVarDeclStmt = (stmt: VarDeclStmt, environment: Environment) => {
 
 const visitWhileStmt = (stmt: WhileStmt, environment: Environment) => {
     while (isTruthy(evaluateExpr(stmt.condition, environment))) {
-        executeStmt(stmt.body, environment);
+        try {
+            executeStmt(stmt.body, environment);
+        } catch (error) {
+            if (error instanceof BreakError) {
+                return undefined;
+            }
+            throw error;
+        }
     }
     return undefined;
+};
+
+const visitBreakStmt = (stmt: BreakStmt) => {
+    throw breakError(stmt.operator, "Break outside of loop.");
 };
 
 function evaluateExpr(ast: Expr, environment: Environment): Literal {

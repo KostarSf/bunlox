@@ -46,6 +46,7 @@ export const TOKEN_TYPES = {
     TRUE: "TRUE",
     VAR: "VAR",
     WHILE: "WHILE",
+    BREAK: "BREAK",
 
     // End of file.
     EOF: "EOF",
