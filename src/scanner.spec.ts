@@ -5,12 +5,12 @@ describe("Scanner", () => {
     test("should scan basic tokens and operators correctly", () => {
         const input = `// this is a comment
 (( )){} // grouping stuff
-!*+-/=<> <= == // operators
+!*+-/=<> <= == % // operators
 `;
 
         const tokens = Array.from(scanTokens(input));
 
-        expect(tokens).toHaveLength(17);
+        expect(tokens).toHaveLength(18);
 
         // Test each token in order
         expect(tokens[0]?.toString()).toBe("Token { type: LEFT_PAREN, lexeme: (, literal: null, line: 2 }");
@@ -29,7 +29,8 @@ describe("Scanner", () => {
         expect(tokens[13]?.toString()).toBe("Token { type: GREATER, lexeme: >, literal: null, line: 3 }");
         expect(tokens[14]?.toString()).toBe("Token { type: LESS_EQUAL, lexeme: <=, literal: null, line: 3 }");
         expect(tokens[15]?.toString()).toBe("Token { type: EQUAL_EQUAL, lexeme: ==, literal: null, line: 3 }");
-        expect(tokens[16]?.toString()).toBe("Token { type: EOF, lexeme: , literal: null, line: 4 }");
+        expect(tokens[16]?.toString()).toBe("Token { type: PERCENT, lexeme: %, literal: null, line: 3 }");
+        expect(tokens[17]?.toString()).toBe("Token { type: EOF, lexeme: , literal: null, line: 4 }");
     });
 
     test("should handle comments correctly", () => {

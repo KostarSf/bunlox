@@ -49,6 +49,24 @@ describe("Parser", () => {
         expect(printAst(ast)).toBe("(== 1 (/ (* (group (+ 2 3)) 4) (group (- 2 1))))");
     });
 
+    test("remainder operator parsing with proper precedence", () => {
+        const input = "1 + 2 * 3 % 4;";
+        const ast = parseAst(scanTokens(input));
+        expect(printAst(ast)).toBe("(+ 1 (% (* 2 3) 4))");
+    });
+
+    test("remainder operator in grouping", () => {
+        const input = "(1 + 2) % 3;";
+        const ast = parseAst(scanTokens(input));
+        expect(printAst(ast)).toBe("(% (group (+ 1 2)) 3)");
+    });
+
+    test("remainder operator with unary", () => {
+        const input = "-5 % 3;";
+        const ast = parseAst(scanTokens(input));
+        expect(printAst(ast)).toBe("(% (- 5) 3)");
+    });
+
     test("missing closing paren reports error at semicolon", () => {
         const input = "(1 == 2 == 3 >= 4;";
         const tokens = Array.from(scanTokens(input));

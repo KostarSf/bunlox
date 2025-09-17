@@ -1,0 +1,161 @@
+// Conditional statements: if, and, or
+
+print "=== Basic If Statements ===";
+var age = 18;
+if (age >= 18) {
+    print "You are an adult";
+}
+
+var score = 85;
+if (score >= 90) {
+    print "Grade: A";
+} else if (score >= 80) {
+    print "Grade: B";        // This will print
+} else if (score >= 70) {
+    print "Grade: C";
+} else {
+    print "Grade: F";
+}
+
+print "=== If-Else Dangling Else ===";
+var condition1 = true;
+var condition2 = false;
+
+if (condition1) if (condition2) print "both true"; else print "first true, second false";  // This will print
+
+print "=== Logical AND Operator ===";
+var hasLicense = true;
+var hasInsurance = true;
+var hasRegistration = false;
+
+// All conditions must be true
+if (hasLicense and hasInsurance and hasRegistration) {
+    print "Ready to drive";
+} else {
+    print "Not ready to drive";  // This will print
+}
+
+// Short-circuit evaluation
+var x = 0;
+if (x != 0 and 10 / x > 5) {
+    print "This won't print";
+} else {
+    print "Short-circuit prevented division by zero";  // This will print
+}
+
+print "=== Logical OR Operator ===";
+var weather = "rainy";
+var temperature = 15;
+
+// At least one condition must be true
+if (weather == "sunny" or temperature > 25) {
+    print "Good weather for outdoor activities";
+} else {
+    print "Stay indoors";  // This will print
+}
+
+// Multiple OR conditions
+var dayOfWeek = "Monday";
+if (dayOfWeek == "Saturday" or dayOfWeek == "Sunday") {
+    print "Weekend!";
+} else {
+    print "Workday";  // This will print
+}
+
+print "=== Complex Combinations ===";
+var userRole = "admin";
+var isLoggedIn = true;
+var hasPermission = false;
+
+// Complex logical expression
+if (isLoggedIn and (userRole == "admin" or userRole == "moderator") and hasPermission) {
+    print "Access granted";
+} else {
+    print "Access denied";  // This will print
+}
+
+print "=== Truthiness Examples ===";
+// Test various truthy/falsy values
+print "Testing true:";
+if (true) {
+    print "true is truthy";
+} else {
+    print "true is falsy";
+}
+
+print "Testing false:";
+if (false) {
+    print "false is truthy";
+} else {
+    print "false is falsy";  // This will print
+}
+
+print "Testing string:";
+if ("hello") {
+    print "\"hello\" is truthy";  // This will print
+} else {
+    print "\"hello\" is falsy";
+}
+
+print "Testing empty string:";
+if ("") {
+    print "\"\" is truthy";
+} else {
+    print "\"\" is falsy";  // This will print
+}
+
+print "Testing number:";
+if (42) {
+    print "42 is truthy";  // This will print
+} else {
+    print "42 is falsy";
+}
+
+print "Testing zero:";
+if (0) {
+    print "0 is truthy";
+} else {
+    print "0 is falsy";  // This will print
+}
+
+print "Testing nil:";
+if (nil) {
+    print "nil is truthy";
+} else {
+    print "nil is falsy";  // This will print
+}
+
+print "=== Nested Conditionals ===";
+var season = "winter";
+var temperature = -5;
+var isRaining = true;
+
+if (season == "winter") {
+    if (temperature < 0) {
+        if (isRaining) {
+            print "Stay home - it's freezing rain!";
+        } else {
+            print "Cold winter day, dress warmly";
+        }
+    } else {
+        print "Mild winter day";
+    }
+} else {
+    print "Not winter";
+}
+
+print "=== Conditional Expressions with Variables ===";
+var a = 10;
+var b = 20;
+var c = 15;
+
+// Find the maximum of three numbers
+var max;
+if (a > b and a > c) {
+    max = a;
+} else if (b > c) {
+    max = b;  // This will be the result
+} else {
+    max = c;
+}
+print "Maximum of " + a + ", " + b + ", " + c + " is " + max;

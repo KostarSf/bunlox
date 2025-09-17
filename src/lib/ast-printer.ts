@@ -42,6 +42,9 @@ export function printAst(exprOrStmt: Expr | Stmt[]): string {
                         ])})`
                     );
                     break;
+                case "breakStmt":
+                    statements.push("(break)");
+                    break;
             }
         }
 

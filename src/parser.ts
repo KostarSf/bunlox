@@ -178,7 +178,7 @@ function parseTokensStream(stream: TokenStream) {
     const term = (): Expr =>
         leftSeries(() => factor(), ["MINUS", "PLUS"], "binary");
     const factor = (): Expr =>
-        leftSeries(() => unary(), ["SLASH", "STAR"], "binary");
+        leftSeries(() => unary(), ["SLASH", "STAR", "PERCENT"], "binary");
     const unary = (): Expr => {
         if (match("BANG", "MINUS")) {
             return ex.unary(previous(), unary());

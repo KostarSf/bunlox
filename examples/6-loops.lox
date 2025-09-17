@@ -1,0 +1,158 @@
+// Loops: for and while
+
+print "=== Basic While Loop ===";
+var count = 1;
+while (count <= 5) {
+    print "Count: " + count;
+    count = count + 1;
+}
+
+print "=== While Loop with Condition ===";
+var number = 10;
+while (number > 0) {
+    print number;
+    number = number - 2;
+}
+print "Done counting down!";
+
+print "=== For Loop Basics ===";
+// Traditional for loop: initialization, condition, increment
+for (var i = 1; i <= 5; i = i + 1) {
+    print "For loop iteration: " + i;
+}
+
+print "=== For Loop with Different Increment ===";
+// Count by 2s
+for (var i = 0; i < 10; i = i + 2) {
+    print "Even count: " + i;
+}
+
+print "=== For Loop Countdown ===";
+// Countdown from 5 to 1
+for (var i = 5; i > 0; i = i - 1) {
+    print "Countdown: " + i;
+}
+print "Blast off!";
+
+print "=== Nested Loops ===";
+// Multiplication table
+print "Multiplication table (3x3):";
+for (var i = 1; i <= 3; i = i + 1) {
+    for (var j = 1; j <= 3; j = j + 1) {
+        var product = i * j;
+        print i + " x " + j + " = " + product;
+    }
+}
+
+print "=== Loop with Break Statement ===";
+var searchNumber = 7;
+for (var i = 1; i <= 10; i = i + 1) {
+    print "Checking: " + i;
+    if (i == searchNumber) {
+        print "Found it! Breaking out of loop.";
+        break;
+    }
+}
+
+print "=== While Loop with Break ===";
+var attempts = 0;
+while (attempts < 5) {
+    attempts = attempts + 1;
+    print "Attempt " + attempts;
+    if (attempts == 3) {
+        print "Giving up after 3 attempts";
+        break;
+    }
+}
+
+print "=== Loop Variables and Scope ===";
+// Variables declared in for loop
+for (var loopVar = 1; loopVar <= 3; loopVar = loopVar + 1) {
+    print "Inside loop, loopVar = " + loopVar;
+}
+
+// loopVar is not accessible here (would cause error if uncommented)
+// print "Outside loop, loopVar = " + loopVar;
+
+print "=== Loop with Variables from Outside ===";
+var sum = 0;
+var limit = 5;
+
+for (var i = 1; i <= limit; i = i + 1) {
+    sum = sum + i;
+    print "Adding " + i + ", sum is now " + sum;
+}
+print "Final sum: " + sum;
+
+print "=== Conditional Loop Control ===";
+var number = 1;
+var maxNumber = 10;
+
+while (number <= maxNumber) {
+    if (number % 2 == 0) {
+        print number + " is even";
+    } else {
+        print number + " is odd";
+    }
+    number = number + 1;
+}
+
+print "=== For Loop with Range Simulation ===";
+// Simulate a range-like behavior
+var end = 5;
+for (var start = 0; start < end; start = start + 1) {
+    print "Range value: " + start;
+}
+
+print "=== Loop with String Operations ===";
+var message = "Hello";
+var repeatCount = 3;
+
+for (var i = 0; i < repeatCount; i = i + 1) {
+    print message + " " + (i + 1);
+}
+
+print "=== Complex Loop Example: Factorial ===";
+var factorial = 1;
+var n = 5;
+
+print "Calculating factorial of " + n;
+for (var i = 1; i <= n; i = i + 1) {
+    factorial = factorial * i;
+    print "Step " + i + ": " + factorial;
+}
+print "Factorial of " + n + " is " + factorial;
+
+print "=== Loop with Early Termination ===";
+var target = 15;
+var current = 0;
+
+print "Counting to " + target + " but stopping early if we hit a multiple of 7";
+while (current < target) {
+    current = current + 1;
+    print "Current: " + current;
+
+    if (current % 7 == 0) {
+        print "Hit multiple of 7! Stopping early.";
+        break;
+    }
+}
+
+print "=== Nested Loop with Break ===";
+print "Searching in 3x3 grid for number 5:";
+var found = false;
+var row = 1;
+while (row <= 3 and !found) {
+    var col = 1;
+    while (col <= 3 and !found) {
+        var value = row * 3 + col;
+        print "Checking position (" + row + "," + col + ") = " + value;
+        if (value == 5) {
+            print "Found 5 at position (" + row + "," + col + ")!";
+            found = true;
+            break;
+        }
+        col = col + 1;
+    }
+    row = row + 1;
+}

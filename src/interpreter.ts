@@ -229,15 +229,24 @@ const visitBinary = (expr: BinaryExpr, environment: Environment) => {
                 ensureNumber(right, expr.operator)
             );
         case "SLASH":
-            return (
-                ensureNumber(left, expr.operator) /
-                ensureNumber(right, expr.operator)
-            );
+            const leftDiv = ensureNumber(left, expr.operator);
+            const rightDiv = ensureNumber(right, expr.operator);
+            if (rightDiv === 0) {
+                throw runtimeError(expr.operator, "Division by zero");
+            }
+            return leftDiv / rightDiv;
         case "STAR":
             return (
                 ensureNumber(left, expr.operator) *
                 ensureNumber(right, expr.operator)
             );
+        case "PERCENT":
+            const leftNum = ensureNumber(left, expr.operator);
+            const rightNum = ensureNumber(right, expr.operator);
+            if (rightNum === 0) {
+                throw runtimeError(expr.operator, "Division by zero");
+            }
+            return leftNum % rightNum;
         case "PLUS":
             const types = [typeof left, typeof right];
             if (types.every((type) => type === "number")) {

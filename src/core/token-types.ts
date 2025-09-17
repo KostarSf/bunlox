@@ -13,6 +13,7 @@ export const TOKEN_TYPES = {
     SEMICOLON: "SEMICOLON",
     SLASH: "SLASH",
     STAR: "STAR",
+    PERCENT: "PERCENT",
 
     // One or two character tokens.
     BANG: "BANG",

@@ -1,0 +1,49 @@
+// Remainder (%) operator examples
+
+print "=== Basic Remainder Operations ===";
+print 17 % 5;     // 2
+print 20 % 6;     // 2
+print 15 % 3;     // 0
+print 0 % 5;      // 0
+
+print "=== Negative Numbers ===";
+print -7 % 3;     // -1
+print 7 % -3;     // 1
+
+print "=== Precedence Tests ===";
+print 1 + 2 * 3 % 4;    // 1 + (2 * (3 % 4)) = 1 + (2 * 3) = 7
+print (1 + 2) % 3;      // (1 + 2) % 3 = 3 % 3 = 0
+
+print "=== Edge Cases ===";
+print 100 % 1;          // 0
+print 5 % 1;            // 0
+print 1 % 100;          // 1
+
+print "=== Variables with Remainder ===";
+var dividend = 17;
+var divisor = 5;
+var result = dividend % divisor;
+print result;           // 2
+
+print "=== Even/Odd Check ===";
+var num = 7;
+if (num % 2 == 0) {
+    print "Even";
+} else {
+    print "Odd";        // This will print
+}
+
+num = 8;
+if (num % 2 == 0) {
+    print "Even";       // This will print
+} else {
+    print "Odd";
+}
+
+print "=== Division Examples ===";
+print 10 / 2;           // 5
+print 7 / 3;            // 2.333...
+
+print "=== Error Cases (uncomment to test) ===";
+// print 5 / 0;         // Runtime error: Division by zero
+// print 5 % 0;         // Runtime error: Division by zero

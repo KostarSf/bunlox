@@ -15,6 +15,7 @@ const SINGLE_TOKENS: Record<string, TokenType> = {
     ";": "SEMICOLON",
     "*": "STAR",
     "/": "SLASH",
+    "%": "PERCENT",
 };
 
 const TWO_CHAR_OPERATORS: Record<
