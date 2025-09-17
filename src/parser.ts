@@ -23,10 +23,12 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *                  | ifStmt
  *                  | printStmt
  *                  | whileStmt
+ *                  | forStmt
  *                  | block
  * ifStmt         → "if" "(" expression ")" statement ( "else" statement )?
  * printStmt      → "print" expression ";"
  * whileStmt      → "while" "(" expression ")" statement
+ * forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement
  * block          → "{" declaration* "}"
  * exprStmt       → expression ";"
  *
@@ -73,6 +75,7 @@ function parseTokensStream(stream: TokenStream) {
         if (match("IF")) return ifStatement();
         if (match("PRINT")) return printStatement();
         if (match("WHILE")) return whileStatement();
+        if (match("FOR")) return forStatement();
         if (match("LEFT_BRACE")) return st.block(blockStatement());
         return expressionStatement();
     };
@@ -90,6 +93,34 @@ function parseTokensStream(stream: TokenStream) {
         consume("RIGHT_PAREN", "Expect ')' after condition.");
         const body = statement();
         return st.whileStmt(condition, body);
+    };
+    const forStatement = (): Stmt => {
+        consume("LEFT_PAREN", "Expect '(' after 'for'.");
+        const initializer = match("SEMICOLON")
+            ? null
+            : match("VAR")
+            ? varDeclaration()
+            : expressionStatement();
+
+        const condition = check("SEMICOLON") ? null : expression();
+        consume("SEMICOLON", "Expect ';' after loop condition.");
+
+        const increment = check("RIGHT_PAREN") ? null : expression();
+        consume("RIGHT_PAREN", "Expect ')' after for clauses.");
+
+        let body = statement();
+
+        if (increment !== null) {
+            body = st.block([body, st.expr(increment)]);
+        }
+
+        body = st.whileStmt(condition ?? ex.literal(true), body);
+
+        if (initializer !== null) {
+            body = st.block([initializer, body]);
+        }
+
+        return body;
     };
     const blockStatement = (): Stmt[] => {
         const statements: Stmt[] = [];
