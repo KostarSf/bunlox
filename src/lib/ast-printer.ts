@@ -74,5 +74,13 @@ function printExpr(expr: Expr): string {
             return `(${expr.operator.lexeme} ${printAst(expr.left)} ${printAst(
                 expr.right
             )})`;
+        case "call":
+            return `(${printAst(expr.callee)} [${expr.args
+                .map(printExpr)
+                .join(", ")}])`;
+        case "function":
+            return `(${expr.name.lexeme} [${expr.parameters
+                .map((param) => param.lexeme)
+                .join(", ")}] ${expr.body.map(printExpr).join(" ")})`;
     }
 }

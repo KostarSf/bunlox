@@ -33,6 +33,13 @@ export interface BreakStmt {
     operator: Token;
 }
 
+export interface FunctionStmt {
+    type: "function";
+    name: Token;
+    parameters: Token[];
+    body: Stmt[];
+}
+
 export interface IfStmt {
     type: "ifStmt";
     condition: Expr;
@@ -47,7 +54,8 @@ export type Stmt =
     | BlockStmt
     | IfStmt
     | WhileStmt
-    | BreakStmt;
+    | BreakStmt
+    | FunctionStmt;
 
 export const expr = (expression: Expr) =>
     ({ type: "exprStmt", expression } satisfies ExprStmt);
@@ -72,3 +80,6 @@ export const whileStmt = (condition: Expr, body: Stmt) =>
 
 export const breakStmt = (operator: Token) =>
     ({ type: "breakStmt", operator } satisfies BreakStmt);
+
+export const functionStmt = (name: Token, parameters: Token[], body: Stmt[]) =>
+    ({ type: "function", name, parameters, body } satisfies FunctionStmt);

@@ -1,6 +1,7 @@
+import { isCallable, type Literal } from "../core/literal";
 import { color } from "./colors";
 
-export function stringify(value: unknown): string {
+export function stringify(value: Literal): string {
     if (value === null || value === undefined) {
         return color("lightgray", "nil");
     }
@@ -18,9 +19,9 @@ export function stringify(value: unknown): string {
         return color("lightgreen", `"${value}"`);
     }
 
-    if (typeof value === "object") {
-        return JSON.stringify(value);
+    if (isCallable(value)) {
+        return value.toString();
     }
 
-    return value.toString();
+    return JSON.stringify(value);
 }

@@ -1,5 +1,6 @@
 import { runtimeError } from "./error";
-import type { Literal, Token } from "./token";
+import { createCallable, type Literal } from "./literal";
+import type { Token } from "./token";
 
 export interface Environment {
     enclosing: Environment | null;
@@ -9,10 +10,19 @@ export interface Environment {
     assign: (name: Token, value: Literal) => void;
 }
 
+function defineGlobals(values: Map<string, Literal>) {
+    values.set(
+        "clock",
+        createCallable(0, () => Date.now() / 1000)
+    );
+}
+
 export function createEnvironment(
     enclosing: Environment | null = null
 ): Environment {
     const values = new Map<string, Literal>();
+
+    if (!enclosing) defineGlobals(values);
 
     const define: Environment["define"] = (name, value) => {
         if (enclosing && values.has(name.lexeme)) {

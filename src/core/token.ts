@@ -1,6 +1,5 @@
+import type { Literal } from "./literal";
 import type { TokenType } from "./token-types";
-
-export type Literal = string | number | boolean | null;
 
 type TokenArgs = Pick<Token, "type"> &
     Partial<Pick<Token, "lexeme" | "literal" | "line">>;

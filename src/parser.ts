@@ -15,8 +15,12 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *
  *
  * declaration    → varDecl
+ *                  | funDecl
  *                  | statement
  * varDecl        → "var" IDENTIFIER ( "=" expression )? ";"
+ * funDecl        → "fun" function
+ * function       → IDENTIFIER "(" parameters? ")" block
+ * parameters     → IDENTIFIER ( "," IDENTIFIER )*
  *
  *
  * statement      → exprStmt
@@ -45,7 +49,9 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  * term           → factor ( ( "-" | "+" ) factor )*
  * factor         → unary ( ( "/" | "*" ) unary )*
  * unary          → ( "!" | "-" ) unary
- *                  | primary
+ *                  | call
+ * call           → primary ( "(" arguments? ")" )*
+ * arguments      → expression ( "," expression )*
  * primary        → "true" | "false" | "nil"
  *                  | NUMBER | STRING
  *                  | "(" expression ")"
@@ -63,6 +69,7 @@ function parseTokensStream(stream: TokenStream) {
     const errors: ParseError[] = [];
 
     const declaration = (): Stmt => {
+        if (match("FUN")) return functionDeclaration("function");
         if (match("VAR")) return varDeclaration();
         return statement();
     };
@@ -72,7 +79,30 @@ function parseTokensStream(stream: TokenStream) {
         consume("SEMICOLON", "Expect ';' after variable declaration.");
         return st.varDecl(name, initializer);
     };
-
+    const functionDeclaration = (kind: string): Stmt => {
+        const name = consume("IDENTIFIER", `Expect ${kind} name.`);
+        consume("LEFT_PAREN", `Expect '(' after ${kind} name.`);
+        const parameters: Token[] = [];
+        if (!check("RIGHT_PAREN")) {
+            do {
+                if (parameters.length >= 255) {
+                    errors.push(
+                        parseError(
+                            peek(),
+                            "Can't have more than 255 parameters."
+                        )
+                    );
+                }
+                parameters.push(
+                    consume("IDENTIFIER", "Expect parameter name.")
+                );
+            } while (match("COMMA"));
+        }
+        consume("RIGHT_PAREN", `Expect ')' after parameters.`);
+        consume("LEFT_BRACE", `Expect '{' before ${kind} body.`);
+        const body = blockStatement();
+        return st.functionStmt(name, parameters, body);
+    };
     const statement = (): Stmt => {
         if (match("IF")) return ifStatement();
         if (match("PRINT")) return printStatement();
@@ -183,7 +213,18 @@ function parseTokensStream(stream: TokenStream) {
         if (match("BANG", "MINUS")) {
             return ex.unary(previous(), unary());
         }
-        return primary();
+        return call();
+    };
+    const call = (): Expr => {
+        let expr = primary();
+        while (true) {
+            if (match("LEFT_PAREN")) {
+                expr = finishCall(expr);
+            } else {
+                break;
+            }
+        }
+        return expr;
     };
     const primary = (): Expr => {
         if (match("FALSE")) return ex.literal(false);
@@ -203,6 +244,24 @@ function parseTokensStream(stream: TokenStream) {
         throw parseError(peek(), "Expect expression.");
     };
 
+    const finishCall = (callee: Expr): Expr => {
+        const args: Expr[] = [];
+        if (!check("RIGHT_PAREN")) {
+            do {
+                if (args.length >= 255) {
+                    errors.push(
+                        parseError(
+                            peek(),
+                            "Can't have more than 255 arguments."
+                        )
+                    );
+                }
+                args.push(expression());
+            } while (match("COMMA"));
+        }
+        const paren = consume("RIGHT_PAREN", "Expect ')' after arguments.");
+        return ex.call(callee, paren, args);
+    };
     /**  Method for parsing a left-associative series of binary operators */
     const leftSeries = (
         exprFn: () => Expr,

@@ -1,5 +1,6 @@
 import { LoxError, syntaxError, type SyntaxError } from "./core/error";
-import { token, type Literal } from "./core/token";
+import type { Literal } from "./core/literal";
+import { token } from "./core/token";
 import { TOKEN_KEYWORDS } from "./core/token-keywords";
 import type { TokenType } from "./core/token-types";
 

@@ -3,6 +3,7 @@ import { BreakError, breakError, runtimeError } from "./core/error";
 import type {
     AssignmentExpr,
     BinaryExpr,
+    CallExpr,
     Expr,
     GroupingExpr,
     LiteralExpr,
@@ -10,17 +11,20 @@ import type {
     UnaryExpr,
     VariableExpr,
 } from "./core/expressions";
+import type { Literal } from "./core/literal";
+import { createFunction, isCallable } from "./core/literal";
 import type {
     BlockStmt,
     BreakStmt,
     ExprStmt,
+    FunctionStmt,
     IfStmt,
     PrintStmt,
     Stmt,
     VarDeclStmt,
     WhileStmt,
 } from "./core/statements";
-import type { Literal, Token } from "./core/token";
+import { type Token } from "./core/token";
 import { color } from "./lib/colors";
 import { stringify } from "./lib/stringify";
 
@@ -63,12 +67,26 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
             return visitWhileStmt(stmt, environment);
         case "breakStmt":
             return visitBreakStmt(stmt);
+        case "function":
+            return visitFunctionStmt(stmt, environment);
     }
 };
 
+const visitFunctionStmt = (stmt: FunctionStmt, environment: Environment) => {
+    const fun = createFunction(stmt, (declaration, enclosing) =>
+        executeBlock(declaration.body, enclosing)
+    );
+    environment.define(stmt.name, fun);
+    return undefined;
+};
+
 const visitBlockStmt = (stmt: BlockStmt, enclosing: Environment) => {
+    return executeBlock(stmt.statements, enclosing);
+};
+
+const executeBlock = (statements: Stmt[], enclosing: Environment) => {
     const scope = createEnvironment(enclosing);
-    for (const statement of stmt.statements) {
+    for (const statement of statements) {
         executeStmt(statement, scope);
     }
     return undefined;
@@ -137,6 +155,10 @@ function evaluateExpr(ast: Expr, environment: Environment): Literal {
             return visitVariable(ast, environment);
         case "assignment":
             return visitAssignment(ast, environment);
+        case "call":
+            return visitCall(ast, environment);
+        default:
+            throw runtimeError(ast.name, "Unknown expression type");
     }
 }
 
@@ -144,6 +166,21 @@ const visitAssignment = (expr: AssignmentExpr, environment: Environment) => {
     const value = evaluateExpr(expr.value, environment);
     environment.assign(expr.name, value);
     return value;
+};
+
+const visitCall = (expr: CallExpr, environment: Environment) => {
+    const callee = evaluateExpr(expr.callee, environment);
+    const args = expr.args.map((arg) => evaluateExpr(arg, environment));
+    if (!isCallable(callee)) {
+        throw runtimeError(expr.paren, "Can only call functions and classes.");
+    }
+    if (args.length !== callee.arity) {
+        throw runtimeError(
+            expr.paren,
+            `Expected ${callee.arity} arguments but got ${args.length}.`
+        );
+    }
+    return callee.call(args, environment);
 };
 
 const visitLogical = (expr: LogicalExpr, environment: Environment) => {
