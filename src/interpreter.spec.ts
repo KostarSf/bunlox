@@ -15,6 +15,7 @@ import { token } from "./core/token";
 import type { TokenType } from "./core/token-types";
 import { interpret } from "./interpreter";
 import { parseAst } from "./parser";
+import { resolve } from "./resolver";
 import { scanTokens } from "./scanner";
 
 const t = (type: TokenType, lexeme: string) => token(type, lexeme);
@@ -26,7 +27,9 @@ function runAndCapture(ast: Expr) {
         out.push(String(msg ?? ""));
     };
     try {
-        interpret([st.expr(ast)], { repl: true });
+        const statements = [st.expr(ast)];
+        const { locals } = resolve(statements);
+        interpret(statements, { repl: true, locals });
     } finally {
         console.log = original;
     }
@@ -57,7 +60,8 @@ function runSourceAndCapture(source: string) {
         out.push(String(msg ?? ""));
     };
     try {
-        interpret(statements, { repl: true });
+        const { locals } = resolve(statements);
+        interpret(statements, { repl: true, locals });
     } finally {
         console.log = original;
     }
@@ -88,7 +92,9 @@ describe("Interpreter", () => {
             ).toBe("1");
 
             expect(
-                runAndCapture(binary(literal(10), t("PERCENT", "%"), literal(4)))
+                runAndCapture(
+                    binary(literal(10), t("PERCENT", "%"), literal(4))
+                )
             ).toBe("2");
         });
 
@@ -242,15 +248,21 @@ describe("Interpreter", () => {
         test("remainder operator with various cases", () => {
             // Basic remainder operations
             expect(
-                runAndCapture(binary(literal(17), t("PERCENT", "%"), literal(5)))
+                runAndCapture(
+                    binary(literal(17), t("PERCENT", "%"), literal(5))
+                )
             ).toBe("2");
 
             expect(
-                runAndCapture(binary(literal(20), t("PERCENT", "%"), literal(6)))
+                runAndCapture(
+                    binary(literal(20), t("PERCENT", "%"), literal(6))
+                )
             ).toBe("2");
 
             expect(
-                runAndCapture(binary(literal(15), t("PERCENT", "%"), literal(3)))
+                runAndCapture(
+                    binary(literal(15), t("PERCENT", "%"), literal(3))
+                )
             ).toBe("0");
 
             expect(
@@ -259,16 +271,22 @@ describe("Interpreter", () => {
 
             // Negative numbers
             expect(
-                runAndCapture(binary(literal(-7), t("PERCENT", "%"), literal(3)))
+                runAndCapture(
+                    binary(literal(-7), t("PERCENT", "%"), literal(3))
+                )
             ).toBe("-1");
 
             expect(
-                runAndCapture(binary(literal(7), t("PERCENT", "%"), literal(-3)))
+                runAndCapture(
+                    binary(literal(7), t("PERCENT", "%"), literal(-3))
+                )
             ).toBe("1");
 
             // Edge case: remainder with 1
             expect(
-                runAndCapture(binary(literal(100), t("PERCENT", "%"), literal(1)))
+                runAndCapture(
+                    binary(literal(100), t("PERCENT", "%"), literal(1))
+                )
             ).toBe("0");
         });
 
@@ -284,29 +302,37 @@ describe("Interpreter", () => {
             expect(outputs2).toEqual(["0"]);
 
             // Test that % has same precedence as * and /
-            const source3 = "2 * 3 % 4;";  // (2 * 3) % 4 = 6 % 4 = 2
+            const source3 = "2 * 3 % 4;"; // (2 * 3) % 4 = 6 % 4 = 2
             const outputs3 = runSourceAndCapture(source3);
             expect(outputs3).toEqual(["2"]);
         });
 
         test("remainder operator with division by zero", () => {
             const source = "5 % 0;";
-            expect(() => runSourceAndCapture(source)).toThrow(/Division by zero/);
+            expect(() => runSourceAndCapture(source)).toThrow(
+                /Division by zero/
+            );
         });
 
         test("remainder operator with non-numeric operands", () => {
             const source = '"hello" % 2;';
-            expect(() => runSourceAndCapture(source)).toThrow(/Operand of % must be a number/);
+            expect(() => runSourceAndCapture(source)).toThrow(
+                /Operand of % must be a number/
+            );
         });
 
         test("division by zero throws runtime error", () => {
             const source = "5 / 0;";
-            expect(() => runSourceAndCapture(source)).toThrow(/Division by zero/);
+            expect(() => runSourceAndCapture(source)).toThrow(
+                /Division by zero/
+            );
         });
 
         test("division with non-numeric operands", () => {
             const source = '"hello" / 2;';
-            expect(() => runSourceAndCapture(source)).toThrow(/Operand of \/ must be a number/);
+            expect(() => runSourceAndCapture(source)).toThrow(
+                /Operand of \/ must be a number/
+            );
         });
     });
 

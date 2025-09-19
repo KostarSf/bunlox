@@ -160,8 +160,11 @@ function parseTokensStream(stream: TokenStream) {
     };
     const returnStatement = (): Stmt => {
         const keyword = previous();
-        const value = match("SEMICOLON") ? null : expression();
-        consume("SEMICOLON", "Expect ';' after return.");
+        let value = null;
+        if (!match("SEMICOLON")) {
+            value = expression();
+            consume("SEMICOLON", "Expect ';' after return.");
+        }
         return st.returnStmt(keyword, value);
     };
     const breakStatement = (): Stmt => {

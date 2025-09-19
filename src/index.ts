@@ -4,6 +4,7 @@ import { interpret, type InterpreterOptions } from "./interpreter";
 import { color } from "./lib/colors";
 import { measure } from "./lib/measure";
 import { parseAst } from "./parser";
+import { resolve } from "./resolver";
 import { scanTokens } from "./scanner";
 
 if (Bun.argv.length > 3) {
@@ -89,8 +90,12 @@ async function run(source: string, options?: InterpreterOptions) {
     const ast = parseAst(tokens);
     parseMeasureFinish();
 
+    const resolveMeasureFinish = measure("Resolve AST");
+    const { locals } = resolve(ast);
+    resolveMeasureFinish();
+
     const interpretMeasureFinish = measure("Interpret AST");
-    interpret(ast, options);
+    interpret(ast, { ...options, locals });
     interpretMeasureFinish();
 }
 

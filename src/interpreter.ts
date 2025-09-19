@@ -44,13 +44,28 @@ export interface InterpreterOptions {
      * The environment to use for the interpreter.
      */
     environment?: Environment;
+    /**
+     * The resolved locals to use for the interpreter.
+     */
+    locals?: Map<Expr, number>;
+}
+
+interface Context {
+    environment: Environment;
+    locals: Map<Expr, number>;
 }
 
 export function interpret(statements: Stmt[], options?: InterpreterOptions) {
-    const { repl = false, environment = createEnvironment() } = options ?? {};
+    const {
+        repl = false,
+        environment = createEnvironment(),
+        locals = new Map(),
+    } = options ?? {};
+
+    const context: Context = { environment, locals };
 
     for (const statement of statements) {
-        let value = executeStmt(statement, environment);
+        let value = executeStmt(statement, context);
         if (repl && value !== undefined) {
             const stringValue = stringify(value);
             console.log(color("darkgray", stringValue));
@@ -58,88 +73,97 @@ export function interpret(statements: Stmt[], options?: InterpreterOptions) {
     }
 }
 
-const executeStmt = (stmt: Stmt, environment: Environment) => {
+const executeStmt = (stmt: Stmt, context: Context) => {
     switch (stmt.type) {
         case "exprStmt":
-            return visitExpressionStmt(stmt, environment);
+            return visitExpressionStmt(stmt, context);
         case "ifStmt":
-            return visitIfStmt(stmt, environment);
+            return visitIfStmt(stmt, context);
         case "printStmt":
-            return visitPrintStmt(stmt, environment);
+            return visitPrintStmt(stmt, context);
         case "varDecl":
-            return visitVarDeclStmt(stmt, environment);
+            return visitVarDeclStmt(stmt, context);
         case "block":
-            return visitBlockStmt(stmt, environment);
+            return visitBlockStmt(stmt, context);
         case "whileStmt":
-            return visitWhileStmt(stmt, environment);
+            return visitWhileStmt(stmt, context);
         case "breakStmt":
             return visitBreakStmt(stmt);
         case "function":
-            return visitFunctionStmt(stmt, environment);
+            return visitFunctionStmt(stmt, context);
         case "returnStmt":
-            return visitReturnStmt(stmt, environment);
+            return visitReturnStmt(stmt, context);
     }
 };
 
-const visitReturnStmt = (expr: ReturnStmt, environment: Environment) => {
+const visitReturnStmt = (expr: ReturnStmt, context: Context) => {
     const value =
-        expr.value === null ? null : evaluateExpr(expr.value, environment);
+        expr.value === null ? null : evaluateExpr(expr.value, context);
     throw returnError(expr.keyword, value);
 };
 
-const visitFunctionStmt = (stmt: FunctionStmt, environment: Environment) => {
-    const fun = createFunction(stmt, environment, (declaration, enclosing) =>
-        executeBlock(declaration.body, enclosing)
+const visitFunctionStmt = (stmt: FunctionStmt, context: Context) => {
+    const fun = createFunction(
+        stmt,
+        context.environment,
+        (declaration, enclosing) =>
+            executeBlock(declaration.body, {
+                ...context,
+                environment: enclosing,
+            })
     );
-    environment.define(stmt.name, fun);
+    context.environment.define(stmt.name, fun);
     return undefined;
 };
 
-const visitBlockStmt = (stmt: BlockStmt, enclosing: Environment) => {
-    return executeBlock(stmt.statements, enclosing);
+const visitBlockStmt = (stmt: BlockStmt, context: Context) => {
+    return executeBlock(stmt.statements, context);
 };
 
-const executeBlock = (statements: Stmt[], enclosing: Environment) => {
-    const scope = createEnvironment(enclosing);
+const executeBlock = (statements: Stmt[], context: Context) => {
+    const scopeContext: Context = {
+        ...context,
+        environment: createEnvironment(context.environment),
+    };
     for (const statement of statements) {
-        executeStmt(statement, scope);
+        executeStmt(statement, scopeContext);
     }
     return undefined;
 };
 
-const visitExpressionStmt = (expr: ExprStmt, environment: Environment) => {
-    return evaluateExpr(expr.expression, environment);
+const visitExpressionStmt = (expr: ExprStmt, context: Context) => {
+    return evaluateExpr(expr.expression, context);
 };
 
-const visitIfStmt = (stmt: IfStmt, environment: Environment) => {
-    const condition = evaluateExpr(stmt.condition, environment);
+const visitIfStmt = (stmt: IfStmt, context: Context) => {
+    const condition = evaluateExpr(stmt.condition, context);
     if (isTruthy(condition)) {
-        executeStmt(stmt.thenBranch, environment);
+        executeStmt(stmt.thenBranch, context);
     } else if (stmt.elseBranch) {
-        executeStmt(stmt.elseBranch, environment);
+        executeStmt(stmt.elseBranch, context);
     }
     return undefined;
 };
 
-const visitPrintStmt = (expr: PrintStmt, environment: Environment) => {
-    const value = evaluateExpr(expr.expression, environment);
+const visitPrintStmt = (expr: PrintStmt, context: Context) => {
+    const value = evaluateExpr(expr.expression, context);
     console.log(stringify(value));
     return undefined;
 };
 
-const visitVarDeclStmt = (stmt: VarDeclStmt, environment: Environment) => {
+const visitVarDeclStmt = (stmt: VarDeclStmt, context: Context) => {
     const value =
         stmt.initializer === null
             ? null
-            : evaluateExpr(stmt.initializer, environment);
-    environment.define(stmt.name, value);
+            : evaluateExpr(stmt.initializer, context);
+    context.environment.define(stmt.name, value);
     return undefined;
 };
 
-const visitWhileStmt = (stmt: WhileStmt, environment: Environment) => {
-    while (isTruthy(evaluateExpr(stmt.condition, environment))) {
+const visitWhileStmt = (stmt: WhileStmt, context: Context) => {
+    while (isTruthy(evaluateExpr(stmt.condition, context))) {
         try {
-            executeStmt(stmt.body, environment);
+            executeStmt(stmt.body, context);
         } catch (error) {
             if (error instanceof BreakError) {
                 return undefined;
@@ -154,44 +178,47 @@ const visitBreakStmt = (stmt: BreakStmt) => {
     throw breakError(stmt.operator, "Break outside of loop.");
 };
 
-function evaluateExpr(ast: Expr, environment: Environment): Literal {
+function evaluateExpr(ast: Expr, context: Context): Literal {
     switch (ast.type) {
         case "literal":
             return visitLiteral(ast);
         case "grouping":
-            return visitGrouping(ast, environment);
+            return visitGrouping(ast, context);
         case "unary":
-            return visitUnary(ast, environment);
+            return visitUnary(ast, context);
         case "binary":
-            return visitBinary(ast, environment);
+            return visitBinary(ast, context);
         case "logical":
-            return visitLogical(ast, environment);
+            return visitLogical(ast, context);
         case "variable":
-            return visitVariable(ast, environment);
+            return visitVariable(ast, context);
         case "assignment":
-            return visitAssignment(ast, environment);
+            return visitAssignment(ast, context);
         case "call":
-            return visitCall(ast, environment);
+            return visitCall(ast, context);
         case "anonymousFunction":
-            return visitFunction(ast, environment);
+            return visitFunction(ast, context);
     }
 }
 
-const visitFunction = (expr: FunctionExpr, environment: Environment) => {
-    return createFunction(expr, environment, (declaration, enclosing) =>
-        executeBlock(declaration.body, enclosing)
+const visitFunction = (expr: FunctionExpr, context: Context) => {
+    return createFunction(expr, context.environment, (declaration, enclosing) =>
+        executeBlock(declaration.body, { ...context, environment: enclosing })
     );
 };
 
-const visitAssignment = (expr: AssignmentExpr, environment: Environment) => {
-    const value = evaluateExpr(expr.value, environment);
-    environment.assign(expr.name, value);
+const visitAssignment = (expr: AssignmentExpr, context: Context) => {
+    const value = evaluateExpr(expr.value, context);
+
+    const distance = context.locals.get(expr);
+    context.environment.assign(expr.name, value, distance);
+
     return value;
 };
 
-const visitCall = (expr: CallExpr, environment: Environment) => {
-    const callee = evaluateExpr(expr.callee, environment);
-    const args = expr.args.map((arg) => evaluateExpr(arg, environment));
+const visitCall = (expr: CallExpr, context: Context) => {
+    const callee = evaluateExpr(expr.callee, context);
+    const args = expr.args.map((arg) => evaluateExpr(arg, context));
     if (!isCallable(callee)) {
         throw runtimeError(expr.paren, "Can only call functions and classes.");
     }
@@ -201,11 +228,11 @@ const visitCall = (expr: CallExpr, environment: Environment) => {
             `Expected ${callee.arity} arguments but got ${args.length}.`
         );
     }
-    return callee.call(args, environment);
+    return callee.call(args, context.environment);
 };
 
-const visitLogical = (expr: LogicalExpr, environment: Environment) => {
-    const left = evaluateExpr(expr.left, environment);
+const visitLogical = (expr: LogicalExpr, context: Context) => {
+    const left = evaluateExpr(expr.left, context);
 
     if (expr.operator.type === "OR") {
         if (isTruthy(left)) return left;
@@ -213,19 +240,26 @@ const visitLogical = (expr: LogicalExpr, environment: Environment) => {
         if (!isTruthy(left)) return left;
     }
 
-    return evaluateExpr(expr.right, environment);
+    return evaluateExpr(expr.right, context);
 };
 
-const visitVariable = (expr: VariableExpr, environment: Environment) =>
-    environment.get(expr.name);
+const visitVariable = (expr: VariableExpr, context: Context) => {
+    return lookUpVariable(expr.name, expr, context);
+};
+
+const lookUpVariable = (name: Token, expr: Expr, context: Context) => {
+    const distance = context.locals.get(expr);
+    return context.environment.get(name, distance);
+};
 
 const visitLiteral = (expr: LiteralExpr) => expr.value;
 
-const visitGrouping = (expr: GroupingExpr, environment: Environment) =>
-    evaluateExpr(expr.expression, environment);
+const visitGrouping = (expr: GroupingExpr, context: Context) => {
+    return evaluateExpr(expr.expression, context);
+};
 
-const visitUnary = (expr: UnaryExpr, environment: Environment) => {
-    const right = evaluateExpr(expr.right, environment);
+const visitUnary = (expr: UnaryExpr, context: Context) => {
+    const right = evaluateExpr(expr.right, context);
 
     switch (expr.operator.type) {
         case "MINUS":
@@ -240,7 +274,7 @@ const visitUnary = (expr: UnaryExpr, environment: Environment) => {
     );
 };
 
-const ensureNumber = (value: unknown, operator: Token) => {
+const ensureNumber = (value: Literal, operator: Token) => {
     if (typeof value !== "number") {
         throw runtimeError(
             operator,
@@ -250,15 +284,15 @@ const ensureNumber = (value: unknown, operator: Token) => {
     return value;
 };
 
-const isTruthy = (value: unknown) => {
+const isTruthy = (value: Literal) => {
     if (value === null || value === undefined) return false;
     if (typeof value === "boolean") return value;
     return true;
 };
 
-const visitBinary = (expr: BinaryExpr, environment: Environment) => {
-    const left = evaluateExpr(expr.left, environment);
-    const right = evaluateExpr(expr.right, environment);
+const visitBinary = (expr: BinaryExpr, context: Context) => {
+    const left = evaluateExpr(expr.left, context);
+    const right = evaluateExpr(expr.right, context);
 
     switch (expr.operator.type) {
         case "GREATER":
@@ -330,7 +364,7 @@ const visitBinary = (expr: BinaryExpr, environment: Environment) => {
     );
 };
 
-const isEqual = (a: unknown, b: unknown) => {
+const isEqual = (a: Literal, b: Literal) => {
     if (a === null || a === undefined) return b === null || b === undefined;
     return a === b;
 };
