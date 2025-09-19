@@ -11,6 +11,7 @@ export interface LoxCallable {
 }
 
 export interface LoxFunction extends LoxCallable {
+    closure: Environment;
     declaration: FunctionStmt;
 }
 
@@ -35,15 +36,17 @@ export function createCallable(
 
 export function createFunction(
     declaration: FunctionStmt,
+    closure: Environment,
     execFn: (declaration: FunctionStmt, enclosing: Environment) => undefined
 ): LoxFunction {
     return Object.freeze({
+        closure,
         declaration,
         get arity() {
             return declaration.parameters.length;
         },
-        call: (args: Literal[], enclosing: Environment) => {
-            const scope = createEnvironment(enclosing);
+        call: (args: Literal[]) => {
+            const scope = createEnvironment(closure);
             for (let i = 0; i < declaration.parameters.length; i++) {
                 const parameter = declaration.parameters[i];
                 const argument = args[i];

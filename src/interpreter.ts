@@ -76,7 +76,7 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
         case "function":
             return visitFunctionStmt(stmt, environment);
         case "returnStmt":
-            visitReturnStmt(stmt, environment);
+            return visitReturnStmt(stmt, environment);
     }
 };
 
@@ -87,7 +87,7 @@ const visitReturnStmt = (expr: ReturnStmt, environment: Environment) => {
 };
 
 const visitFunctionStmt = (stmt: FunctionStmt, environment: Environment) => {
-    const fun = createFunction(stmt, (declaration, enclosing) =>
+    const fun = createFunction(stmt, environment, (declaration, enclosing) =>
         executeBlock(declaration.body, enclosing)
     );
     environment.define(stmt.name, fun);
