@@ -10,6 +10,7 @@ import type {
     BinaryExpr,
     CallExpr,
     Expr,
+    FunctionExpr,
     GroupingExpr,
     LiteralExpr,
     LogicalExpr,
@@ -171,8 +172,16 @@ function evaluateExpr(ast: Expr, environment: Environment): Literal {
             return visitAssignment(ast, environment);
         case "call":
             return visitCall(ast, environment);
+        case "anonymousFunction":
+            return visitFunction(ast, environment);
     }
 }
+
+const visitFunction = (expr: FunctionExpr, environment: Environment) => {
+    return createFunction(expr, environment, (declaration, enclosing) =>
+        executeBlock(declaration.body, enclosing)
+    );
+};
 
 const visitAssignment = (expr: AssignmentExpr, environment: Environment) => {
     const value = evaluateExpr(expr.value, environment);

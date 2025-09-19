@@ -187,7 +187,23 @@ function parseTokensStream(stream: TokenStream) {
         return st.expr(expr);
     };
 
-    const expression = (): Expr => assignment();
+    const expression = (): Expr => functionExpr();
+    const functionExpr = (): Expr => {
+        if (!match("FUN")) return assignment();
+        consume("LEFT_PAREN", "Expect '(' after 'fun'.");
+        const parameters: Token[] = [];
+        if (!check("RIGHT_PAREN")) {
+            do {
+                parameters.push(
+                    consume("IDENTIFIER", "Expect parameter name.")
+                );
+            } while (match("COMMA"));
+        }
+        consume("RIGHT_PAREN", "Expect ')' after parameters.");
+        consume("LEFT_BRACE", "Expect '{' before function body.");
+        const body = blockStatement();
+        return ex.functionExpr(parameters, body);
+    };
     const assignment = (): Expr => {
         const expr = or();
 

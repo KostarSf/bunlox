@@ -1,4 +1,5 @@
 import type { Literal } from "./literal";
+import type { Stmt } from "./statements";
 import type { Token } from "./token";
 
 export interface LiteralExpr {
@@ -49,6 +50,12 @@ export interface AssignmentExpr {
     value: Expr;
 }
 
+export interface FunctionExpr {
+    type: "anonymousFunction";
+    parameters: Token[];
+    body: Stmt[];
+}
+
 export type Expr =
     | LiteralExpr
     | GroupingExpr
@@ -57,7 +64,8 @@ export type Expr =
     | LogicalExpr
     | UnaryExpr
     | VariableExpr
-    | AssignmentExpr;
+    | AssignmentExpr
+    | FunctionExpr;
 
 export const binary = (left: Expr, operator: Token, right: Expr) =>
     ({ type: "binary", left, operator, right } satisfies BinaryExpr);
@@ -82,3 +90,6 @@ export const variable = (name: Token) =>
 
 export const assignment = (name: Token, value: Expr) =>
     ({ type: "assignment", name, value } satisfies AssignmentExpr);
+
+export const functionExpr = (parameters: Token[], body: Stmt[]) =>
+    ({ type: "anonymousFunction", parameters, body } satisfies FunctionExpr);

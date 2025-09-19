@@ -1,5 +1,6 @@
 import { createEnvironment, type Environment } from "./environment";
 import { ReturnError } from "./error";
+import type { FunctionExpr } from "./expressions";
 import type { FunctionStmt } from "./statements";
 
 export type Literal = string | number | boolean | null | LoxCallable;
@@ -12,7 +13,7 @@ export interface LoxCallable {
 
 export interface LoxFunction extends LoxCallable {
     closure: Environment;
-    declaration: FunctionStmt;
+    declaration: FunctionStmt | FunctionExpr;
 }
 
 export function isCallable(value: Literal): value is LoxCallable {
@@ -35,9 +36,12 @@ export function createCallable(
 }
 
 export function createFunction(
-    declaration: FunctionStmt,
+    declaration: FunctionStmt | FunctionExpr,
     closure: Environment,
-    execFn: (declaration: FunctionStmt, enclosing: Environment) => undefined
+    execFn: (
+        declaration: FunctionStmt | FunctionExpr,
+        enclosing: Environment
+    ) => undefined
 ): LoxFunction {
     return Object.freeze({
         closure,
@@ -66,6 +70,11 @@ export function createFunction(
             }
             return null;
         },
-        toString: () => `<fn ${declaration.name.lexeme}>`,
+        toString: () =>
+            `<fn ${
+                declaration.type === "function"
+                    ? declaration.name.lexeme
+                    : "anonymous"
+            }>`,
     } satisfies LoxFunction);
 }
