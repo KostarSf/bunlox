@@ -18,13 +18,6 @@ export interface CallExpr {
     args: Expr[];
 }
 
-export interface FunctionExpr {
-    type: "function";
-    name: Token;
-    parameters: Token[];
-    body: Expr[];
-}
-
 export interface BinaryExpr {
     type: "binary";
     left: Expr;
@@ -60,7 +53,6 @@ export type Expr =
     | LiteralExpr
     | GroupingExpr
     | CallExpr
-    | FunctionExpr
     | BinaryExpr
     | LogicalExpr
     | UnaryExpr
@@ -72,9 +64,6 @@ export const binary = (left: Expr, operator: Token, right: Expr) =>
 
 export const call = (callee: Expr, paren: Token, args: Expr[]) =>
     ({ type: "call", callee, paren, args } satisfies CallExpr);
-
-export const functionExpr = (name: Token, parameters: Token[], body: Expr[]) =>
-    ({ type: "function", name, parameters, body } satisfies FunctionExpr);
 
 export const logical = (left: Expr, operator: Token, right: Expr) =>
     ({ type: "logical", left, operator, right } satisfies LogicalExpr);

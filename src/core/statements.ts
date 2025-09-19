@@ -16,6 +16,12 @@ export interface PrintStmt {
     expression: Expr;
 }
 
+export interface ReturnStmt {
+    type: "returnStmt";
+    keyword: Token;
+    value: Expr | null;
+}
+
 export interface VarDeclStmt {
     type: "varDecl";
     name: Token;
@@ -50,6 +56,7 @@ export interface IfStmt {
 export type Stmt =
     | ExprStmt
     | PrintStmt
+    | ReturnStmt
     | VarDeclStmt
     | BlockStmt
     | IfStmt
@@ -62,6 +69,9 @@ export const expr = (expression: Expr) =>
 
 export const print = (expression: Expr) =>
     ({ type: "printStmt", expression } satisfies PrintStmt);
+
+export const returnStmt = (keyword: Token, value: Expr | null) =>
+    ({ type: "returnStmt", keyword, value } satisfies ReturnStmt);
 
 export const varDecl = (name: Token, initializer: Expr | null) =>
     ({ type: "varDecl", name, initializer } satisfies VarDeclStmt);

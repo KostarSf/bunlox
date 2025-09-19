@@ -28,12 +28,14 @@ import { fromArray, fromIterable } from "./lib/token-stream";
  *                  | printStmt
  *                  | whileStmt
  *                  | forStmt
+ *                  | returnStmt
  *                  | breakStmt
  *                  | block
  * ifStmt         → "if" "(" expression ")" statement ( "else" statement )?
  * printStmt      → "print" expression ";"
  * whileStmt      → "while" "(" expression ")" statement
  * forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement
+ * returnStmt     → "return" expression? ";"
  * breakStmt      → "break" ";"
  * block          → "{" declaration* "}"
  * exprStmt       → expression ";"
@@ -106,6 +108,7 @@ function parseTokensStream(stream: TokenStream) {
     const statement = (): Stmt => {
         if (match("IF")) return ifStatement();
         if (match("PRINT")) return printStatement();
+        if (match("RETURN")) return returnStatement();
         if (match("WHILE")) return whileStatement();
         if (match("FOR")) return forStatement();
         if (match("BREAK")) return breakStatement();
@@ -154,6 +157,12 @@ function parseTokensStream(stream: TokenStream) {
         }
 
         return body;
+    };
+    const returnStatement = (): Stmt => {
+        const keyword = previous();
+        const value = match("SEMICOLON") ? null : expression();
+        consume("SEMICOLON", "Expect ';' after return.");
+        return st.returnStmt(keyword, value);
     };
     const breakStatement = (): Stmt => {
         consume("SEMICOLON", "Expect ';' after break.");

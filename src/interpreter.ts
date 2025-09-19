@@ -1,5 +1,10 @@
 import { createEnvironment, type Environment } from "./core/environment";
-import { BreakError, breakError, runtimeError } from "./core/error";
+import {
+    BreakError,
+    breakError,
+    returnError,
+    runtimeError,
+} from "./core/error";
 import type {
     AssignmentExpr,
     BinaryExpr,
@@ -20,6 +25,7 @@ import type {
     FunctionStmt,
     IfStmt,
     PrintStmt,
+    ReturnStmt,
     Stmt,
     VarDeclStmt,
     WhileStmt,
@@ -69,7 +75,15 @@ const executeStmt = (stmt: Stmt, environment: Environment) => {
             return visitBreakStmt(stmt);
         case "function":
             return visitFunctionStmt(stmt, environment);
+        case "returnStmt":
+            visitReturnStmt(stmt, environment);
     }
+};
+
+const visitReturnStmt = (expr: ReturnStmt, environment: Environment) => {
+    const value =
+        expr.value === null ? null : evaluateExpr(expr.value, environment);
+    throw returnError(expr.keyword, value);
 };
 
 const visitFunctionStmt = (stmt: FunctionStmt, environment: Environment) => {
@@ -157,8 +171,6 @@ function evaluateExpr(ast: Expr, environment: Environment): Literal {
             return visitAssignment(ast, environment);
         case "call":
             return visitCall(ast, environment);
-        default:
-            throw runtimeError(ast.name, "Unknown expression type");
     }
 }
 

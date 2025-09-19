@@ -1,4 +1,5 @@
 import { createEnvironment, type Environment } from "./environment";
+import { ReturnError } from "./error";
 import type { FunctionStmt } from "./statements";
 
 export type Literal = string | number | boolean | null | LoxCallable;
@@ -46,11 +47,20 @@ export function createFunction(
             for (let i = 0; i < declaration.parameters.length; i++) {
                 const parameter = declaration.parameters[i];
                 const argument = args[i];
-                if (!parameter) throw new Error("Parameter is undefined");
-                if (!argument) throw new Error("Argument is undefined");
+                if (parameter === undefined)
+                    throw new Error("Parameter is undefined");
+                if (argument === undefined)
+                    throw new Error("Argument is undefined");
                 scope.define(parameter, argument);
             }
-            execFn(declaration, scope);
+            try {
+                execFn(declaration, scope);
+            } catch (error) {
+                if (error instanceof ReturnError) {
+                    return error.value;
+                }
+                throw error;
+            }
             return null;
         },
         toString: () => `<fn ${declaration.name.lexeme}>`,

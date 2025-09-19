@@ -1,3 +1,4 @@
+import type { Literal } from "./literal";
 import { type Token } from "./token";
 
 export class LoxError extends Error {
@@ -30,6 +31,14 @@ export class RuntimeError extends LoxError {
     }
 }
 
+export class ReturnError extends RuntimeError {
+    value: Literal;
+    constructor(token: Token, value: Literal) {
+        super(token, "Illegal return statement.");
+        this.value = value;
+    }
+}
+
 export class BreakError extends RuntimeError {
     constructor(token: Token, message: string) {
         super(token, message);
@@ -54,4 +63,8 @@ export function runtimeError(token: Token, message: string) {
 
 export function breakError(token: Token, message: string) {
     return new BreakError(token, message);
+}
+
+export function returnError(token: Token, value: Literal) {
+    return new ReturnError(token, value);
 }
